@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Panchayat Seva – Ward Document System</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d1117;--surface:#161b27;--card:#1e2435;--border:#2a3050;
+  --accent:#f97316;--accent2:#3b82f6;--green:#22c55e;
+  --text:#e8eaf0;--muted:#6e7a9f;--danger:#ef4444;--yellow:#eab308;
+}
+body{font-family:'Baloo 2',cursive;background:var(--bg);color:var(--text);min-height:100vh;}
+input,select,button,textarea{font-family:'Baloo 2',cursive;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;}
+
+/* ── LOGIN ── */
+#loginScreen{align-items:center;justify-content:center;
+  background:var(--bg);
+  background-image:radial-gradient(ellipse at 15% 50%,#1a2a4a44,transparent 60%),
+                   radial-gradient(ellipse at 85% 20%,#2a1a0a44,transparent 60%);}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:44px 38px;width:360px;box-shadow:0 25px 60px #00000099;}
+.logo-wrap{text-align:center;margin-bottom:28px;}
+.logo-icon{width:64px;height:64px;border-radius:16px;
+  background:linear-gradient(135deg,#f97316,#ef4444);
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;margin:0 auto 10px;box-shadow:0 8px 24px #f9731640;}
+.logo-title{font-size:22px;font-weight:800;}
+.logo-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.field-label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px;}
+.field-wrap{position:relative;margin-bottom:14px;}
+.field-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;}
+.inp{width:100%;padding:11px 12px 11px 40px;background:var(--card);
+  border:1px solid var(--border);border-radius:10px;color:var(--text);
+  font-size:14px;outline:none;transition:border .2s;}
+.inp:focus{border-color:var(--accent);}
+.inp-plain{width:100%;padding:11px 14px;background:var(--card);
+  border:1px solid var(--border);border-radius:10px;color:var(--text);
+  font-size:14px;outline:none;transition:border .2s;}
+.inp-plain:focus{border-color:var(--accent);}
+.btn-primary{width:100%;padding:13px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,#f97316,#ef4444);
+  color:#fff;font-size:15px;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 16px #f9731444;transition:opacity .2s;}
+.btn-primary:hover{opacity:.9;}
+.btn-secondary{padding:10px 18px;border-radius:9px;border:1px solid var(--border);
+  background:var(--card);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:border .2s;}
+.btn-secondary:hover{border-color:var(--accent);}
+.btn-blue{padding:10px 20px;border-radius:9px;border:none;
+  background:var(--accent2);color:#fff;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-danger{padding:8px 16px;border-radius:8px;border:none;
+  background:var(--danger);color:#fff;font-size:12px;font-weight:700;cursor:pointer;}
+.hint-box{margin-top:18px;padding:12px 14px;background:var(--card);border-radius:10px;font-size:12px;color:var(--muted);}
+.err-msg{color:var(--danger);font-size:13px;text-align:center;margin-bottom:10px;}
+
+/* ── MAIN LAYOUT ── */
+#mainScreen{flex-direction:row;}
+.sidebar{width:210px;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10;}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);}
+.sidebar-logo-title{font-size:18px;font-weight:800;}
+.sidebar-logo-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+nav{flex:1;padding:14px 10px;overflow-y:auto;}
+.nav-btn{display:flex;align-items:center;gap:9px;width:100%;padding:10px 13px;
+  border-radius:9px;border:none;cursor:pointer;background:transparent;
+  color:var(--muted);font-size:13px;font-weight:500;margin-bottom:3px;
+  text-align:left;border-left:3px solid transparent;transition:all .15s;font-family:'Baloo 2',cursive;}
+.nav-btn:hover{background:var(--card);color:var(--text);}
+.nav-btn.active{background:#f9731622;color:var(--accent);font-weight:700;border-left-color:var(--accent);}
+.sidebar-user{padding:14px 18px;border-top:1px solid var(--border);}
+.user-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sync-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-bottom:8px;}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+.sync-dot.syncing{background:var(--yellow);animation:pulse 1s infinite;}
+.btn-signout{width:100%;padding:7px;border-radius:7px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Baloo 2',cursive;}
+
+.main-content{margin-left:210px;flex:1;padding:24px 26px;min-height:100vh;overflow-y:auto;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.top-bar-title{font-size:22px;font-weight:800;}
+.top-bar-actions{display:flex;gap:10px;align-items:center;}
+
+/* ── AVATAR ── */
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#fff;flex-shrink:0;}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;border-radius:20px;padding:2px 10px;
+  font-size:11px;font-weight:600;}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:18px 20px;border-top:3px solid var(--accent);}
+.stat-icon{font-size:24px;margin-bottom:4px;}
+.stat-val{font-size:30px;font-weight:800;color:var(--accent);}
+.stat-label{font-size:12px;color:var(--muted);}
+
+/* ── PEOPLE GRID ── */
+.people-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+.person-card{background:var(--surface);border:1px solid var(--border);border-radius:15px;
+  padding:18px;cursor:pointer;transition:all .15s;}
+.person-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.person-card-top{display:flex;align-items:center;gap:13px;margin-bottom:12px;}
+.person-name{font-weight:800;font-size:15px;}
+.person-sub{font-size:12px;color:var(--muted);}
+.badges-row{display:flex;flex-wrap:wrap;gap:5px;}
+
+/* ── DOC GRID ── */
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:11px;}
+.doc-card{background:var(--card);border:1px solid var(--border);border-radius:11px;
+  padding:13px 14px;border-left:3px solid var(--accent);}
+.doc-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.doc-date{font-size:10px;color:var(--muted);margin-top:4px;}
+
+/* ── FOLDER VIEW ── */
+.folder-header{background:var(--surface);border:1px solid var(--border);border-radius:15px;
+  padding:22px;margin-bottom:18px;display:flex;align-items:center;gap:18px;}
+.folder-name{font-size:22px;font-weight:800;}
+.doc-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  color:var(--muted);margin-bottom:8px;margin-top:14px;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:#00000088;display:flex;
+  align-items:center;justify-content:center;z-index:200;}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  padding:30px;width:420px;max-width:95vw;box-shadow:0 25px 60px #00000099;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:18px;}
+.modal-footer{display:flex;gap:10px;margin-top:20px;}
+
+/* ── SEARCH ── */
+.search-bar{width:100%;padding:13px 16px;background:var(--surface);
+  border:1px solid var(--border);border-radius:12px;color:var(--text);
+  font-size:14px;outline:none;margin-bottom:18px;transition:border .2s;}
+.search-bar:focus{border-color:var(--accent2);}
+.search-row{display:flex;gap:10px;margin-bottom:18px;}
+.search-row .search-bar{margin-bottom:0;flex:1;}
+.ai-note{padding:12px 15px;background:#3b82f622;border-left:3px solid var(--accent2);
+  border-radius:8px;font-size:13px;color:#93c5fd;margin-bottom:16px;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;z-index:999;
+  padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;
+  box-shadow:0 8px 24px #00000066;display:none;
+  animation:slideUp .3s ease;}
+
+/* ── UPLOAD AREA ── */
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:30px;
+  text-align:center;cursor:pointer;transition:border .2s;margin-bottom:14px;}
+.upload-zone:hover{border-color:var(--accent);}
+.upload-zone-icon{font-size:36px;margin-bottom:8px;}
+.upload-zone-text{font-size:14px;color:var(--muted);}
+
+/* ── UNLINKED DOCS ── */
+.unlinked-doc{background:var(--card);border:1px solid var(--yellow);border-radius:11px;
+  padding:13px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+
+/* ── FILTER PILLS ── */
+.filter-pills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;}
+.pill{padding:5px 13px;border-radius:20px;border:1px solid var(--border);
+  background:var(--card);color:var(--muted);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .15s;font-family:'Baloo 2',cursive;}
+.pill.active{border-color:var(--accent);background:#f9731622;color:var(--accent);}
+
+.empty-state{text-align:center;color:var(--muted);padding:50px 20px;}
+.empty-icon{font-size:48px;margin-bottom:10px;}
+.back-link{background:none;border:none;color:var(--accent);cursor:pointer;
+  font-size:13px;font-family:'Baloo 2',cursive;padding:0;margin-top:4px;}
+.section-title{font-size:15px;font-weight:700;margin-bottom:13px;}
+
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Responsive */
+@media(max-width:700px){
+  .sidebar{width:0;overflow:hidden;}
+  .main-content{margin-left:0;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+}
+
+select{width:100%;padding:10px 14px;background:var(--card);border:1px solid var(--border);
+  border-radius:9px;color:var(--text);font-size:14px;outline:none;font-family:'Baloo 2',cursive;}
+select:focus{border-color:var(--accent);}
+.field-row{margin-bottom:13px;}
+.field-row label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN SCREEN ══════════════ -->
+<div id="loginScreen" class="screen active">
+  <div class="login-box">
+    <div class="logo-wrap">
+      <div class="logo-icon">🏛️</div>
+      <div class="logo-title">Panchayat Seva</div>
+      <div class="logo-sub">Ward Document Management System</div>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Username</label>
+      <div class="field-wrap">
+        <span class="field-icon">👤</span>
+        <input class="inp" id="loginUser" type="text" placeholder="Enter username" autocomplete="username"/>
+      </div>
+    </div>
+    <div class="field-row">
+      <label class="field-label">Password</label>
+      <div class="field-wrap">
+        <span class="field-icon">🔒</span>
+        <input class="inp" id="loginPass" type="password" placeholder="Enter password" autocomplete="current-password"/>
+      </div>
+    </div>
+    <div id="loginErr" class="err-msg" style="display:none"></div>
+    <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+    <div class="hint-box">
+      <strong style="color:var(--text)">Demo Login:</strong><br>
+      Username: <code style="color:var(--accent)">wardadmin</code> &nbsp;
+      Password: <code style="color:var(--accent)">ward@123</code>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN SCREEN ══════════════ -->
+<div id="mainScreen" class="screen">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-title">🏛️ Panchayat</div>
+      <div class="sidebar-logo-sub">Seva Management</div>
+    </div>
+    <nav>
+      <button class="nav-btn active" onclick="switchTab('dashboard',this)">🏠 &nbsp;Dashboard</button>
+      <button class="nav-btn" onclick="switchTab('people',this)">👥 &nbsp;People</button>
+      <button class="nav-btn" onclick="switchTab('documents',this)">📁 &nbsp;Documents</button>
+      <button class="nav-btn" onclick="switchTab('unlinked',this)">⚠️ &nbsp;Unlinked Docs</button>
+      <button class="nav-btn" onclick="switchTab('search',this)">🔍 &nbsp;AI Search</button>
+      <button class="nav-btn" onclick="switchTab('settings',this)">⚙️ &nbsp;Settings</button>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-row">
+        <div id="sidebarAvatar" class="avatar" style="width:34px;height:34px;font-size:13px;"></div>
+        <div>
+          <div id="sidebarName" style="font-size:13px;font-weight:700;"></div>
+          <div id="sidebarRole" style="font-size:11px;color:var(--muted);"></div>
+        </div>
+      </div>
+      <div class="sync-row">
+        <span class="sync-dot" id="syncDot"></span>
+        <span id="syncLabel">All devices synced</span>
+      </div>
+      <button class="btn-signout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-content">
+    <div class="top-bar">
+      <div>
+        <div class="top-bar-title" id="pageTitle">Dashboard</div>
+        <button class="back-link" id="backBtn" style="display:none" onclick="goBack()">← Back to People</button>
+      </div>
+      <div class="top-bar-actions">
+        <div id="aiSpinner" style="display:none;align-items:center;gap:7px;background:var(--card);padding:8px 15px;border-radius:20px;font-size:13px;color:var(--yellow);">
+          <span style="animation:spin 1s linear infinite;display:inline-block">⚙️</span> AI organizing...
+        </div>
+        <button class="btn-secondary" onclick="openAddPerson()">+ Add Person</button>
+        <button class="btn-primary" style="width:auto;padding:10px 18px" onclick="document.getElementById('fileInput').click()">⬆ Upload Docs</button>
+        <input type="file" id="fileInput" multiple style="display:none" onchange="handleUpload(event)"/>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard">
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="section-title">Recent People</div>
+      <div class="people-grid" id="recentPeople" style="margin-bottom:24px;"></div>
+      <div class="section-title">Recent Documents</div>
+      <div class="doc-grid" id="recentDocs"></div>
+    </div>
+
+    <!-- PEOPLE -->
+    <div id="tab-people" style="display:none">
+      <input class="search-bar" id="peopleSearch" placeholder="Search by name, Aadhaar, mobile…" oninput="renderPeople()"/>
+      <div class="people-grid" id="peopleGrid"></div>
+    </div>
+
+    <!-- PERSON FOLDER -->
+    <div id="tab-folder" style="display:none">
+      <div id="folderContent"></div>
+    </div>
+
+    <!-- DOCUMENTS -->
+    <div id="tab-documents" style="display:none">
+      <div class="filter-pills" id="docFilters"></div>
+      <div class="doc-grid" id="allDocsGrid"></div>
+    </div>
+
+    <!-- UNLINKED -->
+    <div id="tab-unlinked" style="display:none">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">These documents could not be matched to any person by AI. Link them manually.</div>
+      <div id="unlinkedList"></div>
+    </div>
+
+    <!-- SEARCH -->
+    <div id="tab-search" style="display:none">
+      <div class="search-row">
+        <input class="search-bar" id="aiSearchInput" placeholder="Search anything: name, Aadhaar, document type, village area…" onkeydown="if(event.key==='Enter')doAISearch()"/>
+        <button class="btn-blue" onclick="doAISearch()" style="padding:13px 20px;font-size:14px;">🔍 AI Search</button>
+      </div>
+      <div id="searchResults"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="tab-settings" style="display:none">
+      <div style="max-width:480px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:22px;margin-bottom:16px;">
+          <div class="section-title">Add New User (Multi-device Login)</div>
+          <div class="field-row"><label>Full Name</label><input class="inp-plain" id="newUserName" placeholder="e.g. Ramesh Patel"/></div>
+          <div class="field-row"><label>Username</label><input class="inp-plain" id="newUserUser" placeholder="e.g. ramesh01"/></div>
+          <div class="field-row"><label>Password</label><input class="inp-plain" type="password" id="newUserPass" placeholder="Set a password"/></div>
+          <div class="field-row"><label>Role</label>
+            <select id="newUserRole"><option value="user">Ward Member</option><option value="admin">Admin</option></select>
+          </div>
+          <button class="btn-blue" onclick="addUser()">Add User Account</button>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:22px;">
+          <div class="section-title">Registered Users</div>
+          <div id="usersList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD PERSON MODAL ── -->
+<div class="modal-overlay" id="addPersonModal" style="display:none" onclick="if(event.target===this)closeModal('addPersonModal')">
+  <div class="modal-box">
+    <div class="modal-title">👤 Add Village Member</div>
+    <div class="field-row"><label>Full Name *</label><input class="inp-plain" id="pName" placeholder="Full name"/></div>
+    <div class="field-row"><label>Aadhaar Number</label><input class="inp-plain" id="pAadhaar" placeholder="12-digit Aadhaar"/></div>
+    <div class="field-row"><label>Mobile Number</label><input class="inp-plain" id="pMobile" placeholder="10-digit mobile"/></div>
+    <div class="field-row"><label>Date of Birth</label><input class="inp-plain" type="date" id="pDob"/></div>
+    <div class="field-row"><label>Gender</label>
+      <select id="pGender"><option>Male</option><option>Female</option><option>Other</option></select>
+    </div>
+    <div class="field-row"><label>Address / Ward</label><input class="inp-plain" id="pAddress" placeholder="House no, street, ward"/></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" style="flex:1" onclick="closeModal('addPersonModal')">Cancel</button>
+      <button class="btn-primary" style="flex:2;width:auto" onclick="savePerson()">Add Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LINK DOC MODAL ── -->
+<div class="modal-overlay" id="linkDocModal" style="display:none" onclick="if(event.target===this)closeModal('linkDocModal')">
+  <div class="modal-box">
+    <div class="modal-title">🔗 Link Document to Person</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px;" id="linkDocName"></div>
+    <div class="field-row"><label>Select Person</label>
+      <select id="linkPersonSelect"></select>
+    </div>
+    <div class="field-row"><label>Document Type</label>
+      <select id="linkDocType">
+        <option>Aadhaar</option><option>Ration Card</option><option>Birth Certificate</option>
+        <option>Death Certificate</option><option>Land Record</option><option>Income Certificate</option>
+        <option>Caste Certificate</option><option>Election Card</option><option>Water Bill</option>
+        <option>Property Tax</option><option>Pension Document</option><option>Other</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" style="flex:1" onclick="closeModal('linkDocModal')">Cancel</button>
+      <button class="btn-primary" style="flex:2;width:auto" onclick="saveLink()">Link Document</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  DATABASE  (localStorage — syncs across tabs/devices on same browser)
+// ══════════════════════════════════════════
+const DB_KEY = 'panchayat_v3';
+let DB = loadDB();
+let currentUser = null;
+let currentLinkDocId = null;
+let activeDocFilter = 'All';
+
+function loadDB(){
+  try{
+    const r = localStorage.getItem(DB_KEY);
+    if(r) return JSON.parse(r);
+  }catch(e){}
+  return {
+    users:[{id:'u1',username:'wardadmin',password:'ward@123',name:'Ward Admin',role:'admin'}],
+    people:[],
+    documents:[],
+    ts: Date.now()
+  };
+}
+function saveDB(){
+  DB.ts = Date.now();
+  localStorage.setItem(DB_KEY, JSON.stringify(DB));
+  setSyncStatus('syncing');
+  setTimeout(()=>setSyncStatus('synced'),700);
+}
+
+// Multi-device sync via storage event (works across browser tabs & devices on same network if using shared storage like Firebase — here local tabs)
+window.addEventListener('storage', e=>{
+  if(e.key===DB_KEY && e.newValue){
+    try{
+      const fresh = JSON.parse(e.newValue);
+      if(fresh.ts > DB.ts){ DB=fresh; refreshCurrentTab(); }
+    }catch(e){}
+  }
+});
+
+// ══════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════
+function doLogin(){
+  const u=v('loginUser'), p=v('loginPass');
+  const user = DB.users.find(x=>x.username===u && x.password===p);
+  if(!user){ showEl('loginErr',true); document.getElementById('loginErr').textContent='Invalid username or password'; return; }
+  showEl('loginErr',false);
+  currentUser = user;
+  document.getElementById('sidebarName').textContent = user.name;
+  document.getElementById('sidebarRole').textContent = user.role==='admin'?'Admin':'Ward Member';
+  setAvatar('sidebarAvatar', user.name, 34);
+  showScreen('mainScreen');
+  renderAll();
+}
+document.getElementById('loginPass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+
+function doLogout(){
+  currentUser=null;
+  showScreen('loginScreen');
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+}
+
+// ══════════════════════════════════════════
+//  AI CALLS
+// ══════════════════════════════════════════
+async function aiOrganize(fileName){
+  const peopleSummary = DB.people.map(p=>({id:p.id,name:p.name,aadhaar:p.aadhaar,mobile:p.mobile}));
+  const prompt = `You are an AI for a Panchayat (Indian village council) document system.
+File uploaded: "${fileName}"
+Existing people: ${JSON.stringify(peopleSummary)}
+Detect from filename:
+1. Person name (if any)
+2. Document type from: Aadhaar, Ration Card, Birth Certificate, Death Certificate, Land Record, Income Certificate, Caste Certificate, Election Card, Water Bill, Property Tax, Pension Document, Other
+3. Match to existing person id if confident
+Return ONLY this JSON (no markdown, no backticks):
+{"personName":null,"documentType":"Other","matchedPersonId":null,"confidence":"low","tags":[],"summary":"short description"}`;
+
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:prompt}]})
+    });
+    const data = await res.json();
+    const txt = (data.content||[]).map(b=>b.text||'').join('');
+    return JSON.parse(txt.replace(/```json|```/g,'').trim());
+  }catch(e){
+    return {personName:null,documentType:'Other',matchedPersonId:null,confidence:'low',tags:[],summary:fileName};
+  }
+}
+
+async function aiSmartSearch(query){
+  const prompt = `Panchayat document search.
+Query: "${query}"
+People: ${JSON.stringify(DB.people.slice(0,40).map(p=>({id:p.id,name:p.name,aadhaar:p.aadhaar,mobile:p.mobile,address:p.address})))}
+Documents: ${JSON.stringify(DB.documents.slice(0,60).map(d=>({id:d.id,name:d.name,type:d.type,personId:d.personId,tags:d.tags,summary:d.summary})))}
+Return ONLY JSON (no markdown):
+{"matchedPersonIds":[],"matchedDocumentIds":[],"summary":"brief explanation of results"}`;
+
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
+    });
+    const data = await res.json();
+    const txt = (data.content||[]).map(b=>b.text||'').join('');
+    return JSON.parse(txt.replace(/```json|```/g,'').trim());
+  }catch(e){
+    return {matchedPersonIds:[],matchedDocumentIds:[],summary:'Search error. Showing local matches.'};
+  }
+}
+
+// ══════════════════════════════════════════
+//  UPLOAD
+// ══════════════════════════════════════════
+async function handleUpload(e){
+  const files = Array.from(e.target.files);
+  if(!files.length) return;
+  showEl('aiSpinner',true);
+  for(const file of files){
+    showToast(`🤖 AI organizing: ${file.name}…`,'info');
+    const result = await aiOrganize(file.name);
+    const doc = {
+      id:'d_'+Date.now()+'_'+Math.random().toString(36).slice(2),
+      name: file.name,
+      type: result.documentType||'Other',
+      personId: result.matchedPersonId||null,
+      suggestedName: result.personName,
+      tags: result.tags||[],
+      summary: result.summary||file.name,
+      confidence: result.confidence||'low',
+      size: file.size,
+      uploadedBy: currentUser.id,
+      uploadedAt: Date.now()
+    };
+    DB.documents.push(doc);
+  }
+  saveDB();
+  showEl('aiSpinner',false);
+  showToast(`✅ ${files.length} document(s) organized by AI!`);
+  refreshCurrentTab();
+  e.target.value='';
+}
+
+// ══════════════════════════════════════════
+//  PERSON CRUD
+// ══════════════════════════════════════════
+function openAddPerson(){ openModal('addPersonModal'); }
+function savePerson(){
+  const name = v('pName').trim();
+  if(!name){ showToast('Name is required','error'); return; }
+  const p = {
+    id:'p_'+Date.now(),
+    name, aadhaar:v('pAadhaar'), mobile:v('pMobile'),
+    dob:v('pDob'), gender:v('pGender'), address:v('pAddress'),
+    createdAt:Date.now()
+  };
+  DB.people.push(p);
+  saveDB();
+  closeModal('addPersonModal');
+  ['pName','pAadhaar','pMobile','pDob','pAddress'].forEach(id=>document.getElementById(id).value='');
+  showToast(`✅ ${p.name} added!`);
+  refreshCurrentTab();
+}
+
+// ══════════════════════════════════════════
+//  LINK DOC
+// ══════════════════════════════════════════
+function openLinkDoc(docId){
+  currentLinkDocId = docId;
+  const doc = DB.documents.find(d=>d.id===docId);
+  document.getElementById('linkDocName').textContent = '📄 '+doc.name;
+  const sel = document.getElementById('linkPersonSelect');
+  sel.innerHTML = DB.people.map(p=>`<option value="${p.id}">${p.name}${p.aadhaar?' ('+p.aadhaar+')':''}</option>`).join('');
+  // pre-select if suggested
+  const match = DB.people.find(p=>doc.suggestedName && p.name.toLowerCase().includes((doc.suggestedName||'').toLowerCase()));
+  if(match) sel.value = match.id;
+  document.getElementById('linkDocType').value = doc.type||'Other';
+  openModal('linkDocModal');
+}
+function saveLink(){
+  const doc = DB.documents.find(d=>d.id===currentLinkDocId);
+  if(doc){
+    doc.personId = document.getElementById('linkPersonSelect').value;
+    doc.type = document.getElementById('linkDocType').value;
+    saveDB();
+    showToast('✅ Document linked!');
+    closeModal('linkDocModal');
+    refreshCurrentTab();
+  }
+}
+
+// ══════════════════════════════════════════
+//  USER CRUD
+// ══════════════════════════════════════════
+function addUser(){
+  const name=v('newUserName').trim(), user=v('newUserUser').trim(),
+        pass=v('newUserPass').trim(), role=v('newUserRole');
+  if(!name||!user||!pass){ showToast('Fill all fields','error'); return; }
+  if(DB.users.find(u=>u.username===user)){ showToast('Username already exists','error'); return; }
+  DB.users.push({id:'u_'+Date.now(),name,username:user,password:pass,role});
+  saveDB();
+  showToast('✅ User added! They can login on any device.');
+  renderSettings();
+  document.getElementById('newUserName').value='';
+  document.getElementById('newUserUser').value='';
+  document.getElementById('newUserPass').value='';
+}
+
+// ══════════════════════════════════════════
+//  SEARCH
+// ══════════════════════════════════════════
+async function doAISearch(){
+  const q = document.getElementById('aiSearchInput').value.trim();
+  if(!q) return;
+  document.getElementById('searchResults').innerHTML = '<div style="color:var(--muted);padding:20px">🤖 AI searching…</div>';
+
+  // Local fast match
+  const lq=q.toLowerCase();
+  const localPeople = DB.people.filter(p=>
+    p.name?.toLowerCase().includes(lq)||p.aadhaar?.includes(lq)||p.mobile?.includes(lq)||p.address?.toLowerCase().includes(lq));
+  const localDocs = DB.documents.filter(d=>
+    d.name?.toLowerCase().includes(lq)||d.type?.toLowerCase().includes(lq)||d.summary?.toLowerCase().includes(lq));
+
+  // AI search
+  const ai = await aiSmartSearch(q);
+  const aiPeople = DB.people.filter(p=>ai.matchedPersonIds?.includes(p.id));
+  const aiDocs = DB.documents.filter(d=>ai.matchedDocumentIds?.includes(d.id));
+
+  // Merge
+  const mergedPeople=[...new Map([...localPeople,...aiPeople].map(p=>[p.id,p])).values()];
+  const mergedDocs=[...new Map([...localDocs,...aiDocs].map(d=>[d.id,d])).values()];
+
+  let html='';
+  if(ai.summary) html+=`<div class="ai-note">🤖 ${ai.summary}</div>`;
+  html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">`;
+  html+=`<div><div class="section-title">People (${mergedPeople.length})</div>`;
+  if(mergedPeople.length===0) html+='<div class="empty-state" style="padding:20px"><div>No people found</div></div>';
+  mergedPeople.forEach(p=>{
+    const dc=DB.documents.filter(d=>d.personId===p.id).length;
+    html+=`<div onclick="openFolder('${p.id}')" class="person-card" style="margin-bottom:10px;display:flex;align-items:center;gap:12px;">
+      ${avatarHTML(p.name,40)}
+      <div><div class="person-name">${p.name}</div>
+      <div class="person-sub">${p.aadhaar||p.mobile||''}</div></div>
+      ${badgeHTML(dc+' docs','#f97316')}
+    </div>`;
+  });
+  html+=`</div><div><div class="section-title">Documents (${mergedDocs.length})</div>`;
+  if(mergedDocs.length===0) html+='<div class="empty-state" style="padding:20px"><div>No documents found</div></div>';
+  mergedDocs.forEach(d=>{ html+=docCardHTML(d); });
+  html+=`</div></div>`;
+  document.getElementById('searchResults').innerHTML=html;
+}
+
+// ══════════════════════════════════════════
+//  RENDER FUNCTIONS
+// ══════════════════════════════════════════
+const DOC_COLORS={
+  'Aadhaar':'#f97316','Ration Card':'#22c55e','Birth Certificate':'#3b82f6',
+  'Death Certificate':'#6366f1','Land Record':'#eab308','Income Certificate':'#14b8a6',
+  'Caste Certificate':'#ec4899','Election Card':'#8b5cf6','Water Bill':'#06b6d4',
+  'Property Tax':'#f59e0b','Pension Document':'#a78bfa','Other':'#6e7a9f'
+};
+const ALL_DOC_TYPES=['All','Aadhaar','Ration Card','Birth Certificate','Death Certificate','Land Record','Income Certificate','Caste Certificate','Election Card','Water Bill','Property Tax','Pension Document','Other'];
+
+function avatarHTML(name,size){
+  const initials=(name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const hue=((name||'A').charCodeAt(0)*7)%360;
+  return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${size*.35}px;background:hsl(${hue},55%,42%)">${initials}</div>`;
+}
+function badgeHTML(label,color){
+  return `<span class="badge" style="background:${color}22;color:${color};border:1px solid ${color}44">${label}</span>`;
+}
+function docCardHTML(doc){
+  const color=DOC_COLORS[doc.type]||'#6e7a9f';
+  const person=DB.people.find(p=>p.id===doc.personId);
+  return `<div class="doc-card" style="border-left-color:${color};margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+      <span>📄</span>
+      <div class="doc-name" style="flex:1">${doc.name}</div>
+    </div>
+    ${badgeHTML(doc.type,color)}
+    ${person?`<div style="font-size:12px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:5px">${avatarHTML(person.name,18)} ${person.name}</div>`:''}
+    ${doc.confidence==='low'?'<div style="font-size:10px;color:var(--yellow);margin-top:4px">⚠ Low confidence</div>':''}
+    <div class="doc-date">${new Date(doc.uploadedAt).toLocaleDateString('en-IN')}</div>
+  </div>`;
+}
+
+function renderDashboard(){
+  const stats=[
+    {label:'Total People',val:DB.people.length,icon:'👥',color:'#3b82f6'},
+    {label:'Total Documents',val:DB.documents.length,icon:'📄',color:'#f97316'},
+    {label:'Linked Documents',val:DB.documents.filter(d=>d.personId).length,icon:'✅',color:'#22c55e'},
+    {label:'Unlinked Documents',val:DB.documents.filter(d=>!d.personId).length,icon:'⚠️',color:'#eab308'},
+  ];
+  document.getElementById('statsGrid').innerHTML=stats.map(s=>`
+    <div class="stat-card" style="border-top-color:${s.color}">
+      <div class="stat-icon">${s.icon}</div>
+      <div class="stat-val" style="color:${s.color}">${s.val}</div>
+      <div class="stat-label">${s.label}</div>
+    </div>`).join('');
+
+  const recP=[...DB.people].reverse().slice(0,6);
+  document.getElementById('recentPeople').innerHTML=recP.length?recP.map(p=>{
+    const dc=DB.documents.filter(d=>d.personId===p.id).length;
+    return `<div class="person-card" onclick="openFolder('${p.id}')">
+      <div class="person-card-top">${avatarHTML(p.name,44)}
+        <div><div class="person-name">${p.name}</div>
+        <div class="person-sub">${p.mobile||p.aadhaar||'No contact'}</div></div>
+      </div>
+      <div class="badges-row">${badgeHTML(dc+' docs','#f97316')}${p.gender?badgeHTML(p.gender,'#22c55e'):''}</div>
+    </div>`;
+  }).join(''):`<div class="empty-state"><div class="empty-icon">👥</div><div>No people yet. Click "+ Add Person"</div></div>`;
+
+  const recD=[...DB.documents].reverse().slice(0,8);
+  document.getElementById('recentDocs').innerHTML=recD.length?recD.map(d=>docCardHTML(d)).join(''):`<div class="empty-state"><div class="empty-icon">📄</div><div>No documents yet. Click "⬆ Upload Docs"</div></div>`;
+}
+
+function renderPeople(){
+  const q=(document.getElementById('peopleSearch')?.value||'').toLowerCase();
+  const filtered=DB.people.filter(p=>
+    !q||p.name?.toLowerCase().includes(q)||p.aadhaar?.includes(q)||p.mobile?.includes(q));
+  document.getElementById('peopleGrid').innerHTML=filtered.length?filtered.map(p=>{
+    const docs=DB.documents.filter(d=>d.personId===p.id);
+    const types=[...new Set(docs.map(d=>d.type))].slice(0,3);
+    return `<div class="person-card" onclick="openFolder('${p.id}')">
+      <div class="person-card-top">${avatarHTML(p.name,48)}
+        <div><div class="person-name">${p.name}</div>
+        <div class="person-sub">${p.gender||''}${p.dob?' • '+p.dob:''}</div></div>
+      </div>
+      ${p.aadhaar?`<div style="font-size:12px;color:var(--muted);margin-bottom:3px">Aadhaar: ${p.aadhaar}</div>`:''}
+      ${p.mobile?`<div style="font-size:12px;color:var(--muted);margin-bottom:8px">📱 ${p.mobile}</div>`:''}
+      <div class="badges-row">${badgeHTML(docs.length+' docs','#f97316')}${types.map(t=>badgeHTML(t,DOC_COLORS[t]||'#6e7a9f')).join('')}</div>
+    </div>`;
+  }).join(''):`<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔍</div><div>No people found</div></div>`;
+}
+
+function openFolder(personId){
+  const person=DB.people.find(p=>p.id===personId);
+  if(!person) return;
+  const docs=DB.documents.filter(d=>d.personId===personId);
+  const byType=docs.reduce((acc,d)=>{(acc[d.type]=acc[d.type]||[]).push(d);return acc;},{});
+
+  let html=`<div class="folder-header">
+    ${avatarHTML(person.name,58)}
+    <div style="flex:1">
+      <div class="folder-name">${person.name}</div>
+      <div class="badges-row" style="margin-top:8px">
+        ${person.aadhaar?badgeHTML('Aadhaar: '+person.aadhaar,'#f97316'):''}
+        ${person.mobile?badgeHTML('📱 '+person.mobile,'#3b82f6'):''}
+        ${person.gender?badgeHTML(person.gender,'#22c55e'):''}
+        ${person.dob?badgeHTML('DOB: '+person.dob,'#a78bfa'):''}
+      </div>
+      ${person.address?`<div style="font-size:13px;color:var(--muted);margin-top:7px">📍 ${person.address}</div>`:''}
+    </div>
+    <div style="text-align:right"><div style="font-size:30px;font-weight:800;color:var(--accent)">${docs.length}</div>
+    <div style="font-size:12px;color:var(--muted)">Documents</div></div>
+  </div>`;
+
+  if(Object.keys(byType).length===0){
+    html+=`<div class="empty-state"><div class="empty-icon">📂</div><div>No documents linked yet.<br>Upload docs and AI will link them, or use "Unlinked Docs" to link manually.</div></div>`;
+  } else {
+    Object.entries(byType).forEach(([type,tdocs])=>{
+      const color=DOC_COLORS[type]||'#6e7a9f';
+      html+=`<div class="doc-section-title" style="color:${color}">${type} (${tdocs.length})</div>
+        <div class="doc-grid">${tdocs.map(d=>docCardHTML(d)).join('')}</div>`;
+    });
+  }
+
+  document.getElementById('folderContent').innerHTML=html;
+
+  // Switch to folder tab
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display='none');
+  document.getElementById('tab-folder').style.display='block';
+  document.getElementById('pageTitle').textContent='📁 '+person.name+"'s Folder";
+  document.getElementById('backBtn').style.display='block';
+  document.querySelectorAll('.nav-btn').forEach(b=>{b.classList.remove('active'); if(b.textContent.includes('People')) b.classList.add('active');});
+}
+
+function goBack(){
+  document.getElementById('tab-folder').style.display='none';
+  document.getElementById('tab-people').style.display='block';
+  document.getElementById('pageTitle').textContent='People';
+  document.getElementById('backBtn').style.display='none';
+  renderPeople();
+}
+
+function renderDocuments(){
+  const pills=document.getElementById('docFilters');
+  pills.innerHTML=ALL_DOC_TYPES.map(t=>`<button class="pill${activeDocFilter===t?' active':''}" onclick="setDocFilter('${t}')">${t}</button>`).join('');
+  const filtered=activeDocFilter==='All'?DB.documents:DB.documents.filter(d=>d.type===activeDocFilter);
+  document.getElementById('allDocsGrid').innerHTML=filtered.length?filtered.map(d=>docCardHTML(d)).join(''):`<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📁</div><div>No documents found</div></div>`;
+}
+function setDocFilter(t){ activeDocFilter=t; renderDocuments(); }
+
+function renderUnlinked(){
+  const unlinked=DB.documents.filter(d=>!d.personId);
+  document.getElementById('unlinkedList').innerHTML=unlinked.length?unlinked.map(d=>{
+    const color=DOC_COLORS[d.type]||'#6e7a9f';
+    return `<div class="unlinked-doc">
+      <span style="font-size:22px">📄</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.name}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${badgeHTML(d.type,color)} ${d.suggestedName?'<span style="color:var(--yellow)">AI suggestion: '+d.suggestedName+'</span>':''}</div>
+      </div>
+      <button class="btn-blue" style="font-size:12px;padding:7px 13px" onclick="openLinkDoc('${d.id}')">🔗 Link</button>
+    </div>`;
+  }).join(''):`<div class="empty-state"><div class="empty-icon">✅</div><div>All documents are linked!</div></div>`;
+}
+
+function renderSettings(){
+  document.getElementById('usersList').innerHTML=DB.users.map(u=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      ${avatarHTML(u.name,32)}
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">${u.name}</div>
+        <div style="font-size:12px;color:var(--muted)">@${u.username} • ${u.role}</div>
+      </div>
+      ${u.id!=='u1'?`<button class="btn-danger" onclick="deleteUser('${u.id}')">Delete</button>`:'<span style="font-size:11px;color:var(--green)">Owner</span>'}
+    </div>`).join('');
+}
+function deleteUser(id){
+  if(!confirm('Delete this user?')) return;
+  DB.users=DB.users.filter(u=>u.id!==id);
+  saveDB(); renderSettings(); showToast('User deleted');
+}
+
+// ══════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════
+const tabMap={
+  dashboard:renderDashboard, people:renderPeople,
+  documents:renderDocuments, unlinked:renderUnlinked,
+  search:()=>{}, settings:renderSettings
+};
+const tabTitles={dashboard:'Dashboard',people:'Village People',documents:'All Documents',
+  unlinked:'Unlinked Documents',search:'🔍 AI Smart Search',settings:'Settings'};
+
+function switchTab(name, btn){
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.getElementById('pageTitle').textContent=tabTitles[name]||name;
+  document.getElementById('backBtn').style.display='none';
+  if(tabMap[name]) tabMap[name]();
+}
+
+function renderAll(){ renderDashboard(); renderPeople(); renderDocuments(); renderUnlinked(); renderSettings(); }
+function refreshCurrentTab(){
+  const active=document.querySelector('.nav-btn.active');
+  if(active) active.click();
+  else renderDashboard();
+}
+
+// ══════════════════════════════════════════
+//  UI HELPERS
+// ══════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function openModal(id){ document.getElementById(id).style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+function v(id){ return document.getElementById(id)?.value||''; }
+function showEl(id, show){ document.getElementById(id).style.display=show?'block':'none'; }
+
+function setSyncStatus(status){
+  const dot=document.getElementById('syncDot');
+  const lbl=document.getElementById('syncLabel');
+  if(status==='syncing'){ dot.classList.add('syncing'); lbl.textContent='Syncing…'; }
+  else { dot.classList.remove('syncing'); lbl.textContent='All devices synced'; }
+}
+
+function setAvatar(id, name, size){
+  const el=document.getElementById(id);
+  const initials=(name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const hue=((name||'A').charCodeAt(0)*7)%360;
+  el.style.background=`hsl(${hue},55%,42%)`;
+  el.style.width=size+'px'; el.style.height=size+'px';
+  el.style.fontSize=(size*.35)+'px';
+  el.textContent=initials;
+}
+
+let toastTimer;
+function showToast(msg, type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=type==='error'?'var(--danger)':type==='info'?'var(--accent2)':'var(--green)';
+  t.style.display='block';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.style.display='none',3200);
+}
+</script>
+</body>
+</html>
