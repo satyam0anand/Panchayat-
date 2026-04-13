@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>Panchayat Seva</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;900&family=Baloo+2:wght@800;900&display=swap');
+:root{
+  --bg:#0d1117;--card:#161b27;--card2:#1e2536;--border:#252f42;
+  --accent:#f97316;--blue:#3b82f6;--text:#e2e8f0;--muted:#7a8599;
+  --green:#22c55e;--red:#ef4444;--inp:#141c2e;--r:13px;--purple:#8b5cf6;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Noto Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+
+/* ── AUTH SCREEN ── */
+.auth-screen{
+  position:fixed;inset:0;background:linear-gradient(135deg,#0d1117 0%,#1a2540 50%,#0d1117 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;z-index:1000;
+}
+.auth-screen.hidden{display:none}
+.auth-logo{font-family:'Baloo 2',cursive;font-size:32px;color:var(--accent);font-weight:900;margin-bottom:4px;text-align:center}
+.auth-tagline{font-size:12px;color:var(--muted);margin-bottom:32px;text-align:center}
+.auth-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:380px}
+.auth-tabs{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.auth-tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .15s}
+.auth-tab.on{background:var(--accent);color:#fff}
+.auth-field{margin-bottom:14px}
+.auth-field label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;letter-spacing:.3px}
+.auth-field input{width:100%;padding:12px 14px;background:var(--inp);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit}
+.auth-field input:focus{outline:none;border-color:var(--blue)}
+.auth-field input::placeholder{color:var(--muted);font-size:13px}
+.auth-btn{width:100%;padding:14px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--accent),#dc2626);color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;margin-top:4px}
+.auth-divider{text-align:center;font-size:11px;color:var(--muted);margin:14px 0;position:relative}
+.auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--border)}
+.auth-divider::before{left:0}.auth-divider::after{right:0}
+.auth-google{width:100%;padding:12px;border:1px solid var(--border);border-radius:11px;background:var(--card2);color:var(--text);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.auth-error{font-size:12px;color:var(--red);margin-top:8px;text-align:center;min-height:18px}
+.auth-sync-badge{display:flex;align-items:center;gap:6px;background:#0c2340;border:1px solid var(--blue);border-radius:8px;padding:8px 12px;margin-top:16px;font-size:11px;color:#93c5fd}
+
+/* ── SETUP BANNER ── */
+.setup-banner{background:#1c0a00;border:1px solid var(--accent);border-radius:10px;padding:12px 14px;margin:14px;font-size:12px;display:none}
+.setup-banner.show{display:block}
+.setup-banner strong{color:var(--accent);display:block;margin-bottom:4px}
+.setup-banner a{color:var(--blue);text-decoration:underline;cursor:pointer}
+
+/* ── TOP BAR ── */
+.topbar{background:linear-gradient(135deg,#1a2540,#0f172a);padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar-logo{font-family:'Baloo 2',cursive;font-size:18px;color:var(--accent);font-weight:900;flex:1}
+.topbar-sub{font-size:10px;color:var(--muted);display:block}
+.topbar-count{background:#1e3a5f;color:#93c5fd;font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 6px var(--green)}
+.sync-dot.off{background:var(--red);box-shadow:0 0 6px var(--red)}
+.sync-dot.syncing{background:var(--accent);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--card2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;overflow:hidden;flex-shrink:0}
+.user-avatar img{width:100%;height:100%;object-fit:cover}
+
+/* ── NAV ── */
+.navtabs{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
+.navtab{flex:1;padding:10px 4px;text-align:center;font-size:10px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;user-select:none}
+.navtab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.navtab span{font-size:16px;display:block;margin-bottom:2px}
+
+/* ── PAGES ── */
+.pages{flex:1;overflow:hidden;position:relative}
+.page{position:absolute;inset:0;overflow-y:auto;display:none;padding:14px}
+.page.on{display:block}
+.page-flex{position:absolute;inset:0;display:none;flex-direction:column}
+.page-flex.on{display:flex}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.sbox{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 6px;text-align:center}
+.snum{font-size:19px;font-weight:900;font-family:'Baloo 2',cursive;color:var(--accent)}
+.snum.blue{color:var(--blue)}.snum.green{color:var(--green)}.snum.red{color:var(--red)}
+.slbl{font-size:9px;color:var(--muted);font-weight:700;letter-spacing:.3px;margin-top:1px}
+
+/* ── SEARCH ── */
+.searchbar{display:flex;gap:8px;margin-bottom:10px}
+.search-wrap{flex:1;position:relative}
+.search-wrap input{width:100%;padding:10px 12px 10px 36px;background:var(--inp);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit}
+.search-wrap input:focus{outline:none;border-color:var(--blue)}
+.search-wrap input::placeholder{color:var(--muted);font-size:13px}
+.search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none}
+.filter-btn{padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:12px;cursor:pointer;font-family:inherit;font-weight:700;white-space:nowrap}
+.filter-btn.active{border-color:var(--accent);color:var(--accent)}
+
+/* ── CHIPS ── */
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);flex-shrink:0}
+.chip.on{background:#1e3a5f;border-color:var(--blue);color:#93c5fd}
+
+/* ── VIRTUAL LIST ── */
+#vscroll-wrap{overflow-y:auto;padding-bottom:80px}
+#vscroll-inner{position:relative;width:100%}
+#vscroll-items{position:absolute;top:0;left:0;right:0}
+.mrow{display:flex;align-items:center;gap:11px;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;cursor:pointer;user-select:none;transition:border-color .15s}
+.mrow:active,.mrow.sel{border-color:var(--blue)}
+.mrow.sel{background:#0f1d33}
+.mcheck{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:#fff}
+.mrow.sel .mcheck{background:var(--blue);border-color:var(--blue)}
+.mavatar{width:44px;height:44px;border-radius:50%;background:var(--card2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;flex-shrink:0}
+.mavatar img{width:100%;height:100%;object-fit:cover}
+.minfo{flex:1;min-width:0}
+.mname{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msub{font-size:11px;color:var(--muted);margin-top:1px}
+.mbadges{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.badge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px}
+.bb{background:#1e3a5f;color:#93c5fd}.bg{background:#14532d;color:#86efac}
+.bv{background:#312e81;color:#c4b5fd}.bo{background:#431407;color:#fdba74}
+.br{background:#450a0a;color:#fca5a5}
+.mward{font-size:10px;color:var(--muted);font-weight:700;flex-shrink:0;max-width:55px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+
+/* ── BULK BAR ── */
+.bulkbar{position:fixed;bottom:0;left:0;right:0;background:#1e3a5f;border-top:2px solid var(--blue);padding:10px 14px;display:none;flex-direction:column;gap:8px;z-index:200}
+.bulkbar.show{display:flex}
+.bulkbar-top{display:flex;align-items:center;gap:8px}
+.bulkbar-count{font-size:14px;font-weight:800;color:#93c5fd;flex:1}
+.bulkbar-btns{display:flex;gap:8px;overflow-x:auto}
+.bbar-btn{padding:9px 14px;border-radius:9px;border:none;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap}
+.bbar-del{background:#7f1d1d;color:#fca5a5}
+.bbar-export{background:#14532d;color:#86efac}
+.bbar-ward{background:#1d4ed8;color:#fff}
+.bbar-cancel{background:var(--card2);color:var(--text)}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .eico{font-size:48px;margin-bottom:10px}
+.empty h3{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px}
+.empty p{font-size:12px;line-height:1.7}
+
+/* ── FORM ── */
+.sec-head{font-size:10px;font-weight:800;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.sec-head::after{content:'';flex:1;height:1px;background:var(--border)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;letter-spacing:.3px}
+.req{color:var(--accent)}
+input[type=text],input[type=number],input[type=tel],input[type=email],input[type=date],select,textarea{width:100%;padding:11px 13px;background:var(--inp);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;font-family:inherit;-webkit-appearance:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)}
+input::placeholder,textarea::placeholder{color:var(--muted);font-size:12px}
+select option{background:#1e2536}
+textarea{resize:vertical;min-height:65px}
+.photo-area{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:14px}
+.photo-ring{width:84px;height:84px;border-radius:50%;background:var(--card2);border:3px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:34px;cursor:pointer;overflow:hidden;transition:border-color .2s;position:relative}
+.photo-ring:hover{border-color:var(--accent)}
+.photo-ring img{width:100%;height:100%;object-fit:cover;display:none}
+.cam-overlay{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);font-size:13px;text-align:center;padding:3px}
+.photo-lbl{font-size:11px;color:var(--muted);font-weight:700}
+
+/* ── DOC BLOCK ── */
+.doc-block{border:2px dashed var(--border);border-radius:12px;background:var(--inp);overflow:hidden;transition:border-color .2s;margin-top:6px}
+.doc-block.has-img{border-style:solid;border-color:var(--blue)}
+.doc-trigger{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+.doc-ico{width:42px;height:42px;border-radius:9px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.doc-info-title{font-size:13px;font-weight:700;color:var(--text)}
+.doc-info-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.doc-preview{width:100%;max-height:160px;object-fit:cover;display:none}
+.doc-btns{display:none;gap:0}
+.doc-btns button{flex:1;padding:8px 4px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;border-top:1px solid var(--border)}
+.doc-btns button+button{border-left:1px solid var(--border)}
+.db-crop{background:#1d4ed8;color:#fff}.db-retake{background:var(--card2);color:var(--text)}.db-clear{background:#7f1d1d;color:#fca5a5}
+.ai-bar{display:none;align-items:center;gap:8px;background:#0c2340;border:1px solid #1d4ed8;border-radius:9px;padding:8px 12px;margin-top:6px;font-size:12px;color:#93c5fd}
+.ai-bar.show{display:flex}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid #3b82f6;border-top-color:transparent;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-done{display:none;align-items:center;gap:8px;background:#052e16;border:1px solid #16a34a;border-radius:9px;padding:8px 12px;margin-top:6px;font-size:12px;color:#86efac}
+.ai-done.show{display:flex}
+
+/* ── FORM BTNS ── */
+.form-btns{display:flex;gap:10px;padding:12px 14px;background:var(--bg);border-top:1px solid var(--border);flex-shrink:0}
+.btn-save{flex:2;padding:13px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--accent),#dc2626);color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer}
+.btn-cancel-form{flex:1;padding:13px;border:1px solid var(--border);border-radius:11px;background:var(--card2);color:var(--text);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+
+/* ═══════════════════════════════
+   BULK FILE UPLOAD PAGE
+═══════════════════════════════ */
+.bulk-drop-zone{
+  border:3px dashed var(--border);border-radius:16px;
+  background:var(--inp);padding:32px 20px;text-align:center;
+  cursor:pointer;transition:all .2s;margin-bottom:14px;
+}
+.bulk-drop-zone:hover,.bulk-drop-zone.dragover{border-color:var(--purple);background:#12112a}
+.bulk-drop-zone .dico{font-size:48px;margin-bottom:10px}
+.bulk-drop-zone h3{font-size:15px;font-weight:800;color:var(--text);margin-bottom:6px}
+.bulk-drop-zone p{font-size:12px;color:var(--muted);line-height:1.6}
+.bulk-formats{display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.fmt-badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:var(--card2);color:var(--muted);border:1px solid var(--border)}
+
+/* ── FILE QUEUE ── */
+.file-queue{margin-bottom:14px}
+.file-queue-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.file-queue-title{font-size:12px;font-weight:800;color:var(--muted)}
+.fq-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.fq-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden}
+.fq-thumb img{width:100%;height:100%;object-fit:cover}
+.fq-info{flex:1;min-width:0}
+.fq-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fq-status{font-size:11px;margin-top:2px}
+.fq-status.pending{color:var(--muted)}
+.fq-status.scanning{color:var(--blue)}
+.fq-status.matched{color:var(--green)}
+.fq-status.new-person{color:var(--accent)}
+.fq-status.error{color:var(--red)}
+.fq-badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;flex-shrink:0}
+.fq-badge.matched{background:#14532d;color:#86efac}
+.fq-badge.new{background:#431407;color:#fdba74}
+.fq-badge.scanning{background:#1e3a5f;color:#93c5fd}
+.fq-badge.error{background:#450a0a;color:#fca5a5}
+
+/* ── AI RESULT CARD ── */
+.ai-result-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-top:6px;font-size:12px}
+.ai-result-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.ai-result-label{color:var(--muted);font-weight:700;width:80px;flex-shrink:0}
+.ai-result-value{color:var(--text);font-weight:600;flex:1}
+.match-profile{display:flex;align-items:center;gap:8px;background:#0c2340;border:1px solid var(--blue);border-radius:8px;padding:8px 10px;margin-top:6px}
+.match-profile-name{font-size:13px;font-weight:800;color:var(--text);flex:1}
+.match-confidence{font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;background:#1e3a5f;color:#93c5fd}
+.match-actions{display:flex;gap:6px;margin-top:6px}
+.match-btn{flex:1;padding:8px;border-radius:8px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit}
+.match-btn.accept{background:#14532d;color:#86efac}
+.match-btn.new-profile{background:#431407;color:#fdba74}
+.match-btn.skip{background:var(--card2);color:var(--muted)}
+
+/* ── BULK PROGRESS ── */
+.bulk-progress{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px;display:none}
+.bulk-progress.show{display:block}
+.bp-label{font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.bp-bar{height:8px;background:var(--card2);border-radius:4px;overflow:hidden}
+.bp-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--blue));border-radius:4px;transition:width .4s}
+.bp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.bp-stat{text-align:center}
+.bp-stat-num{font-size:16px;font-weight:900;font-family:'Baloo 2',cursive}
+.bp-stat-lbl{font-size:9px;color:var(--muted);font-weight:700}
+.bulk-run-btn{width:100%;padding:14px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;margin-bottom:14px}
+.bulk-run-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── DETAIL VIEW ── */
+.detail-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;overflow-y:auto}
+.detail-page.show{display:flex;flex-direction:column}
+.detail-topbar{background:linear-gradient(135deg,#1a2540,#0f172a);padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0;position:sticky;top:0;z-index:10}
+.detail-back{background:none;border:none;color:var(--text);font-size:22px;cursor:pointer}
+.detail-title{font-size:15px;font-weight:800;flex:1}
+.detail-edit-btn{padding:7px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}
+.detail-body{padding:16px;flex:1}
+.d-avatar-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:14px;background:var(--card);border-radius:var(--r);border:1px solid var(--border)}
+.d-avatar{width:70px;height:70px;border-radius:50%;background:var(--card2);border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden;flex-shrink:0}
+.d-avatar img{width:100%;height:100%;object-fit:cover}
+.d-name{font-size:17px;font-weight:900}
+.d-ward{font-size:12px;color:var(--muted);margin-top:2px}
+.d-badges{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.info-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px}
+.info-item.full{grid-column:1/-1}
+.info-lbl{font-size:9px;font-weight:800;color:var(--muted);letter-spacing:.5px;margin-bottom:3px}
+.info-val{font-size:13px;font-weight:700;word-break:break-all}
+.info-val.ev{color:var(--border);font-style:italic;font-weight:400}
+.doc-thumb-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-top:6px;scrollbar-width:none}
+.doc-thumb-row::-webkit-scrollbar{display:none}
+.doc-thumb{width:88px;height:60px;border-radius:8px;object-fit:cover;flex-shrink:0;border:2px solid var(--border);cursor:pointer}
+.doc-thumb-empty{width:88px;height:60px;border-radius:8px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;border:2px dashed var(--border);flex-shrink:0;color:var(--muted)}
+
+/* ── MODALS ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+.modal-bg.show{display:flex}
+.crop-box{width:100%;max-width:380px;background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden}
+.crop-title{padding:13px 16px;font-weight:800;font-size:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.crop-canvas-wrap{background:#000;height:230px;position:relative}
+#cropCanvas{width:100%;height:230px;display:block;object-fit:contain}
+.crop-overlay{position:absolute;inset:18px;border:2px solid var(--accent);pointer-events:none;border-radius:4px}
+.crop-actions{display:flex;border-top:1px solid var(--border)}
+.crop-actions button{flex:1;padding:12px;border:none;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
+.crop-cancel{background:var(--card2);color:var(--text)}
+.crop-confirm{background:var(--accent);color:#fff}
+.small-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:600;align-items:flex-end;justify-content:center}
+.small-modal.show{display:flex}
+.small-modal-inner{background:var(--card);border-radius:var(--r) var(--r) 0 0;border:1px solid var(--border);width:100%;max-width:480px;padding:18px 16px}
+.small-modal-title{font-size:14px;font-weight:800;margin-bottom:12px}
+.user-menu{display:none;position:fixed;top:52px;right:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:8px;z-index:400;min-width:200px}
+.user-menu.show{display:block}
+.user-menu-item{padding:10px 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px}
+.user-menu-item:hover{background:var(--card2)}
+.user-menu-email{font-size:11px;color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.img-full{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:700;align-items:center;justify-content:center}
+.img-full.show{display:flex}
+.img-full img{max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px}
+.img-full-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* ── REPORTS ── */
+.report-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.report-card h3{font-size:13px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.bar-lbl{font-size:11px;color:var(--muted);width:78px;font-weight:600;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;height:9px;background:var(--card2);border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--accent),var(--blue));transition:width .6s}
+.bar-num{font-size:11px;color:var(--muted);width:30px;text-align:right;font-weight:700}
+.export-row{display:flex;gap:8px;margin-top:8px}
+.exp-btn{flex:1;padding:10px;border-radius:9px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;text-align:center}
+.exp-btn.csv{border-color:#16a34a;color:#86efac;background:#052e16}
+.exp-btn.json{border-color:var(--blue);color:#93c5fd;background:#0c2340}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e3a5f;border:1px solid var(--blue);color:#93c5fd;padding:9px 18px;border-radius:30px;font-size:13px;font-weight:700;z-index:9999;transition:transform .3s;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.up{transform:translateX(-50%) translateY(0)}
+.toast.green-t{background:#052e16;border-color:#16a34a;color:#86efac}
+.toast.red-t{background:#450a0a;border-color:#dc2626;color:#fca5a5}
+.toast.purple-t{background:#1e1b4b;border-color:var(--purple);color:#c4b5fd}
+
+/* ── FAB ── */
+.fab{position:fixed;bottom:18px;right:16px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#dc2626);border:none;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 4px 18px rgba(249,115,22,.4);z-index:150;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.fab:active{transform:scale(.93)}
+
+/* ── SETTINGS ── */
+.setting-row{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;cursor:pointer}
+.setting-ico{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.setting-text{flex:1}
+.setting-title{font-size:13px;font-weight:700}
+.setting-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.setting-arrow{color:var(--muted);font-size:16px}
+
+/* ── SOURCE PICKER (Camera vs Gallery) ── */
+.src-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:800;align-items:flex-end;justify-content:center}
+.src-sheet.show{display:flex}
+.src-inner{background:var(--card);border-radius:20px 20px 0 0;border:1px solid var(--border);width:100%;max-width:480px;padding:20px 16px 32px}
+.src-title{font-size:13px;font-weight:800;color:var(--muted);text-align:center;margin-bottom:16px;letter-spacing:.5px;text-transform:uppercase}
+.src-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.src-btn{
+  padding:18px 10px;border:1px solid var(--border);border-radius:14px;
+  background:var(--card2);cursor:pointer;font-family:inherit;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  transition:border-color .15s;
+}
+.src-btn:active{border-color:var(--blue)}
+.src-btn .src-ico{font-size:30px}
+.src-btn .src-lbl{font-size:13px;font-weight:800;color:var(--text)}
+.src-btn .src-sub{font-size:10px;color:var(--muted);text-align:center}
+.src-btn.camera{border-color:#1d4ed8;background:#0c2340}
+.src-btn.gallery{border-color:#14532d;background:#052e16}
+.src-cancel-btn{width:100%;padding:13px;border:1px solid var(--border);border-radius:11px;background:none;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════════════ -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-logo">🏛️ Panchayat Seva</div>
+  <div class="auth-tagline">Village Management · Real-time Sync · AI Powered</div>
+
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <div class="auth-tab on" id="tab-login" onclick="switchAuthTab('login')">Login</div>
+      <div class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</div>
+    </div>
+
+    <div id="auth-login-form">
+      <div class="auth-field"><label>Email Address</label><input type="email" id="login-email" placeholder="your@email.com"/></div>
+      <div class="auth-field"><label>Password</label><input type="password" id="login-pass" placeholder="Enter password"/></div>
+      <button class="auth-btn" onclick="doLogin()">Login →</button>
+      <div class="auth-divider">or</div>
+      <button class="auth-google" onclick="doGoogleLogin()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.1 29.3 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.3 1 7.2 2.7l5.7-5.7C33.5 7.3 29 5 24 5 12.95 5 4 13.95 4 25s8.95 20 20 20 20-8.95 20-20c0-1.3-.14-2.6-.4-3.9z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.5 15.9 18.9 13 24 13c2.8 0 5.3 1 7.2 2.7l5.7-5.7C33.5 7.3 29 5 24 5 16.3 5 9.7 9.4 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c4.9 0 9.4-1.8 12.8-4.8l-5.9-5c-1.9 1.3-4.2 2-6.9 2-5.2 0-9.6-3-11.3-7.2l-6.5 5C9.6 40.5 16.3 45 24 45z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.4.1.1 0 0 0 0l5.9 5C36.9 39 44 34 44 25c0-1.3-.14-2.6-.4-3.9z"/></svg>
+        Continue with Google
+      </button>
+      <div class="auth-error" id="login-error"></div>
+    </div>
+
+    <div id="auth-signup-form" style="display:none">
+      <div class="auth-field"><label>Full Name</label><input type="text" id="signup-name" placeholder="Your name"/></div>
+      <div class="auth-field"><label>Email Address</label><input type="email" id="signup-email" placeholder="your@email.com"/></div>
+      <div class="auth-field"><label>Password</label><input type="password" id="signup-pass" placeholder="Min 6 characters"/></div>
+      <div class="auth-field"><label>Village / Panchayat Name</label><input type="text" id="signup-village" placeholder="Enter village name"/></div>
+      <button class="auth-btn" onclick="doSignup()">Create Account →</button>
+      <div class="auth-error" id="signup-error"></div>
+    </div>
+  </div>
+
+  <div class="auth-sync-badge">
+    <span>🔄</span>
+    <span>Login on any device — data syncs automatically in real-time</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SETUP BANNER (shown if no Firebase config)
+═══════════════════════════════════════ -->
+<div class="setup-banner" id="setup-banner">
+  <strong>⚙️ Firebase Setup Required for Login & Sync</strong>
+  See the SETUP.md file for step-by-step instructions to enable email login and real-time sync across devices.
+  <br/><a onclick="showSetupGuide()">View Setup Guide</a>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MAIN APP
+═══════════════════════════════════════ -->
+<div id="main-app" style="display:none;flex-direction:column;height:100%">
+
+<div class="topbar">
+  <div style="flex:1">
+    <div class="topbar-logo">🏛️ Panchayat Seva</div>
+    <span class="topbar-sub" id="topbar-village">Village Management</span>
+  </div>
+  <div class="sync-dot" id="sync-dot" title="Sync status"></div>
+  <div class="topbar-count" id="topbar-count">0 Members</div>
+  <div class="user-avatar" id="user-avatar" onclick="toggleUserMenu()">👤</div>
+</div>
+
+<div class="user-menu" id="user-menu">
+  <div class="user-menu-email" id="user-menu-email">Loading…</div>
+  <div class="user-menu-item" onclick="showPage('settings');toggleUserMenu()">⚙️ Settings</div>
+  <div class="user-menu-item" onclick="doLogout()" style="color:var(--red)">🚪 Logout</div>
+</div>
+
+<div class="navtabs">
+  <div class="navtab on" onclick="showPage('members')"><span>👥</span>Members</div>
+  <div class="navtab" onclick="showPage('bulk')"><span>🗂️</span>Bulk AI</div>
+  <div class="navtab" onclick="showPage('add')"><span>➕</span>Add</div>
+  <div class="navtab" onclick="showPage('reports')"><span>📊</span>Reports</div>
+  <div class="navtab" onclick="showPage('settings')"><span>⚙️</span>Settings</div>
+</div>
+
+<div class="pages">
+
+<!-- ── MEMBERS ── -->
+<div class="page on" id="page-members">
+  <div class="stats">
+    <div class="sbox"><div class="snum" id="s-total">0</div><div class="slbl">TOTAL</div></div>
+    <div class="sbox"><div class="snum blue" id="s-aadhaar">0</div><div class="slbl">AADHAAR</div></div>
+    <div class="sbox"><div class="snum green" id="s-bank">0</div><div class="slbl">BANK</div></div>
+    <div class="sbox"><div class="snum red" id="s-pending">0</div><div class="slbl">PENDING</div></div>
+  </div>
+  <div class="searchbar">
+    <div class="search-wrap">
+      <span class="search-ico">🔍</span>
+      <input type="text" id="search-inp" placeholder="Search name, Aadhaar, ward, mobile…" oninput="onSearch()"/>
+    </div>
+    <button class="filter-btn" id="grp-btn" onclick="toggleGroup()">⊞ Ward</button>
+  </div>
+  <div class="chips" id="ward-chips"></div>
+  <div id="vscroll-wrap" style="height:calc(100vh - 272px)">
+    <div id="vscroll-inner"><div id="vscroll-items"></div></div>
+    <div class="empty" id="empty-state" style="display:none">
+      <div class="eico">👥</div>
+      <h3>No Members Yet</h3>
+      <p>Tap + to add members, use Bulk AI<br/>to import documents, or CSV import.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     BULK AI FILE UPLOAD PAGE
+══════════════════════════════════════ -->
+<div class="page" id="page-bulk">
+
+  <!-- Drop Zone -->
+  <div class="bulk-drop-zone" id="bulk-drop-zone"
+    onclick="document.getElementById('bulk-file-inp').click()"
+    ondragover="onBulkDragOver(event)" ondragleave="onBulkDragLeave(event)" ondrop="onBulkDrop(event)">
+    <div class="dico">🗂️</div>
+    <h3>Upload Documents in Bulk</h3>
+    <p>Upload 10, 50, or 100+ photos at once.<br/>AI will read each document and match<br/>it to an existing member or create a new profile.</p>
+    <div class="bulk-formats">
+      <span class="fmt-badge">📸 Aadhaar</span>
+      <span class="fmt-badge">🪪 PAN</span>
+      <span class="fmt-badge">🗳️ Voter ID</span>
+      <span class="fmt-badge">📋 Ration</span>
+      <span class="fmt-badge">🏦 Passbook</span>
+      <span class="fmt-badge">👤 Photos</span>
+    </div>
+  </div>
+  <input type="file" id="bulk-file-inp" accept="image/*,application/pdf" multiple style="display:none" onchange="onBulkFilesSelected(this)"/>
+
+  <!-- Progress -->
+  <div class="bulk-progress" id="bulk-progress">
+    <div class="bp-label">
+      <span id="bp-label-text">Processing…</span>
+      <span id="bp-pct">0%</span>
+    </div>
+    <div class="bp-bar"><div class="bp-fill" id="bp-fill" style="width:0%"></div></div>
+    <div class="bp-stats">
+      <div class="bp-stat"><div class="bp-stat-num green" id="bp-matched">0</div><div class="bp-stat-lbl">MATCHED</div></div>
+      <div class="bp-stat"><div class="bp-stat-num" style="color:var(--accent)" id="bp-new">0</div><div class="bp-stat-lbl">NEW PROFILE</div></div>
+      <div class="bp-stat"><div class="bp-stat-num red" id="bp-error">0</div><div class="bp-stat-lbl">ERRORS</div></div>
+    </div>
+  </div>
+
+  <!-- Run Button -->
+  <button class="bulk-run-btn" id="bulk-run-btn" onclick="runBulkAI()" disabled>
+    🤖 Start AI Processing
+  </button>
+
+  <!-- File Queue -->
+  <div class="file-queue" id="file-queue">
+    <div class="file-queue-header">
+      <span class="file-queue-title" id="fq-title">Files will appear here after selection</span>
+      <span id="fq-clear" style="font-size:11px;color:var(--red);cursor:pointer;display:none" onclick="clearBulkQueue()">Clear all</span>
+    </div>
+    <div id="fq-list"></div>
+  </div>
+
+</div>
+
+<!-- ── ADD/EDIT FORM ── -->
+<div class="page-flex" id="page-add">
+  <div style="flex:1;overflow-y:auto;padding:14px">
+    <div class="photo-area">
+      <div class="photo-ring" onclick="openSrcPicker('profile')">
+        <img id="form-photo-img"/>
+        <span id="form-photo-icon">👤</span>
+        <div class="cam-overlay">📷 / 🖼️</div>
+      </div>
+      <div class="photo-lbl">Tap to add photo — Camera or Gallery</div>
+    </div>
+    <input type="file" id="photo-file-cam" accept="image/*" capture="user" style="display:none" onchange="handlePhotoUpload(this)"/>
+    <input type="file" id="photo-file-gal" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)"/>
+
+    <div class="sec-head">Personal Information</div>
+    <div class="field"><label><strong>Full Name</strong> <span class="req">*</span></label><input type="text" id="f-name" placeholder="Full name as on document"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label><strong>Date of Birth</strong></label><input type="date" id="f-dob"/></div>
+      <div class="field"><label><strong>Gender</strong></label>
+        <select id="f-gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select>
+      </div>
+    </div>
+    <div class="field"><label><strong>Mobile</strong></label><input type="tel" id="f-mobile" placeholder="10-digit mobile" maxlength="10"/></div>
+    <div class="field"><label><strong>Address / Ward</strong></label><input type="text" id="f-address" placeholder="Full address"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label><strong>Ward No.</strong></label><input type="text" id="f-ward" placeholder="Ward 3"/></div>
+      <div class="field"><label><strong>Category</strong></label>
+        <select id="f-category"><option value="">General</option><option>OBC</option><option>SC</option><option>ST</option><option>EWS</option></select>
+      </div>
+    </div>
+    <div class="field"><label><strong>Father / Mother / Husband</strong></label><input type="text" id="f-relative" placeholder="Relative's full name"/></div>
+    <div class="field"><label><strong>Occupation</strong></label><input type="text" id="f-occupation" placeholder="Farmer, Labour, Business…"/></div>
+
+    <div class="sec-head">🪪 Aadhaar</div>
+    <div class="field"><label><strong>Aadhaar Number</strong></label><input type="tel" id="f-aadhaar" placeholder="XXXX XXXX XXXX" maxlength="14" oninput="fmtAadhaar(this)"/></div>
+    <div class="field"><label>📸 Upload — AI reads number instantly</label>
+      <div class="doc-block" id="doc-aadhaar">
+        <div class="doc-trigger" onclick="openSrcPicker('aadhaar')">
+          <div class="doc-ico">🪪</div>
+          <div><div class="doc-info-title">Upload Aadhaar — Camera or File</div><div class="doc-info-sub">AI auto-fills 12-digit number instantly</div></div>
+        </div>
+        <img class="doc-preview" id="prev-aadhaar"/>
+        <div class="doc-btns" id="btns-aadhaar" style="display:flex">
+          <button class="db-crop" onclick="openCrop('aadhaar')">✂️ Crop</button>
+          <button class="db-retake" onclick="openSrcPicker('aadhaar')">🔄 Change</button>
+          <button class="db-clear" onclick="clearDoc('aadhaar')">🗑️</button>
+        </div>
+      </div>
+      <div class="ai-bar" id="ai-aadhaar"><div class="spin"></div>AI reading Aadhaar…</div>
+      <div class="ai-done" id="done-aadhaar">✅ Aadhaar extracted!</div>
+      <input type="file" id="file-aadhaar-cam" accept="image/*" capture="environment" style="display:none" onchange="handleDoc('aadhaar',this)"/>
+      <input type="file" id="file-aadhaar-gal" accept="image/*,application/pdf" style="display:none" onchange="handleDoc('aadhaar',this)"/>
+    </div>
+
+    <div class="sec-head">🪪 PAN Card</div>
+    <div class="field"><label><strong>PAN Number</strong></label><input type="text" id="f-pan" placeholder="ABCDE1234F" maxlength="10" style="text-transform:uppercase"/></div>
+    <div class="field"><label>📸 Upload — AI reads number instantly</label>
+      <div class="doc-block" id="doc-pan">
+        <div class="doc-trigger" onclick="openSrcPicker('pan')">
+          <div class="doc-ico">🪪</div>
+          <div><div class="doc-info-title">Upload PAN — Camera or File</div><div class="doc-info-sub">AI auto-fills PAN number instantly</div></div>
+        </div>
+        <img class="doc-preview" id="prev-pan"/>
+        <div class="doc-btns" id="btns-pan" style="display:flex">
+          <button class="db-crop" onclick="openCrop('pan')">✂️ Crop</button>
+          <button class="db-retake" onclick="openSrcPicker('pan')">🔄 Change</button>
+          <button class="db-clear" onclick="clearDoc('pan')">🗑️</button>
+        </div>
+      </div>
+      <div class="ai-bar" id="ai-pan"><div class="spin"></div>AI reading PAN…</div>
+      <div class="ai-done" id="done-pan">✅ PAN extracted!</div>
+      <input type="file" id="file-pan-cam" accept="image/*" capture="environment" style="display:none" onchange="handleDoc('pan',this)"/>
+      <input type="file" id="file-pan-gal" accept="image/*,application/pdf" style="display:none" onchange="handleDoc('pan',this)"/>
+    </div>
+
+    <div class="sec-head">🗳️ Voter ID</div>
+    <div class="field"><label><strong>Voter ID Number</strong></label><input type="text" id="f-voter" placeholder="Voter card number" style="text-transform:uppercase"/></div>
+    <div class="field"><label>📸 Upload — AI reads number instantly</label>
+      <div class="doc-block" id="doc-voter">
+        <div class="doc-trigger" onclick="openSrcPicker('voter')">
+          <div class="doc-ico">🗳️</div>
+          <div><div class="doc-info-title">Upload Voter ID — Camera or File</div><div class="doc-info-sub">AI auto-fills voter ID number instantly</div></div>
+        </div>
+        <img class="doc-preview" id="prev-voter"/>
+        <div class="doc-btns" id="btns-voter" style="display:flex">
+          <button class="db-crop" onclick="openCrop('voter')">✂️ Crop</button>
+          <button class="db-retake" onclick="openSrcPicker('voter')">🔄 Change</button>
+          <button class="db-clear" onclick="clearDoc('voter')">🗑️</button>
+        </div>
+      </div>
+      <div class="ai-bar" id="ai-voter"><div class="spin"></div>AI reading Voter ID…</div>
+      <div class="ai-done" id="done-voter">✅ Voter ID extracted!</div>
+      <input type="file" id="file-voter-cam" accept="image/*" capture="environment" style="display:none" onchange="handleDoc('voter',this)"/>
+      <input type="file" id="file-voter-gal" accept="image/*,application/pdf" style="display:none" onchange="handleDoc('voter',this)"/>
+    </div>
+
+    <div class="sec-head">🏦 Bank Details</div>
+    <div class="field"><label><strong>Bank Name</strong></label>
+      <select id="f-bank-name"><option value="">Select Bank</option><option>State Bank of India</option><option>Bank of Baroda</option><option>Punjab National Bank</option><option>Canara Bank</option><option>Union Bank of India</option><option>HDFC Bank</option><option>ICICI Bank</option><option>Axis Bank</option><option>Post Office Savings</option><option>Other</option></select>
+    </div>
+    <div class="field"><label><strong>Account Number</strong></label><input type="tel" id="f-acc-no" placeholder="Account number"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label><strong>IFSC Code</strong></label><input type="text" id="f-ifsc" placeholder="SBIN0001234" maxlength="11" style="text-transform:uppercase"/></div>
+      <div class="field"><label><strong>Account Type</strong></label>
+        <select id="f-acc-type"><option>Savings</option><option>Current</option><option>Jan Dhan</option></select>
+      </div>
+    </div>
+    <div class="field"><label><strong>Account Holder Name</strong></label><input type="text" id="f-acc-name" placeholder="Name as per passbook"/></div>
+    <div class="field"><label>📸 Upload Passbook/Cheque — AI reads details</label>
+      <div class="doc-block" id="doc-bank">
+        <div class="doc-trigger" onclick="openSrcPicker('bank')">
+          <div class="doc-ico">🏦</div>
+          <div><div class="doc-info-title">Upload Passbook / Cheque — Camera or File</div><div class="doc-info-sub">AI auto-fills account number & IFSC</div></div>
+        </div>
+        <img class="doc-preview" id="prev-bank"/>
+        <div class="doc-btns" id="btns-bank" style="display:flex">
+          <button class="db-crop" onclick="openCrop('bank')">✂️ Crop</button>
+          <button class="db-retake" onclick="openSrcPicker('bank')">🔄 Change</button>
+          <button class="db-clear" onclick="clearDoc('bank')">🗑️</button>
+        </div>
+      </div>
+      <div class="ai-bar" id="ai-bank"><div class="spin"></div>AI reading bank details…</div>
+      <div class="ai-done" id="done-bank">✅ Account & IFSC extracted!</div>
+      <input type="file" id="file-bank-cam" accept="image/*" capture="environment" style="display:none" onchange="handleDoc('bank',this)"/>
+      <input type="file" id="file-bank-gal" accept="image/*,application/pdf" style="display:none" onchange="handleDoc('bank',this)"/>
+    </div>
+
+    <div class="sec-head">🌾 Govt Schemes</div>
+    <div class="field"><label>PM Kisan ID</label><input type="text" id="f-pmkisan" placeholder="PM Kisan beneficiary ID"/></div>
+    <div class="field"><label>MGNREGA Job Card</label><input type="text" id="f-mgnrega" placeholder="Job card number"/></div>
+    <div class="field"><label>Ration Card Number</label><input type="text" id="f-ration" placeholder="Ration card number"/></div>
+    <div class="field"><label>Ayushman Card</label><input type="text" id="f-ayushman" placeholder="Ayushman card number"/></div>
+    <div class="field"><label>Notes</label><textarea id="f-notes" placeholder="Additional notes…" rows="3"></textarea></div>
+    <div style="height:10px"></div>
+  </div>
+  <div class="form-btns">
+    <button class="btn-cancel-form" onclick="cancelForm()">Cancel</button>
+    <button class="btn-save" onclick="saveMember()">💾 Save Member</button>
+  </div>
+</div>
+
+<!-- ── REPORTS ── -->
+<div class="page" id="page-reports">
+  <div class="report-card"><h3>📊 Document Coverage</h3><div id="doc-coverage-bars"></div></div>
+  <div class="report-card"><h3>🏘️ By Ward (Top 10)</h3><div id="ward-bars"></div></div>
+  <div class="report-card"><h3>👥 Gender</h3><div id="gender-bars"></div></div>
+  <div class="report-card">
+    <h3>📁 Export Data</h3>
+    <div class="export-row">
+      <button class="exp-btn csv" onclick="exportCSV()">⬇️ CSV</button>
+      <button class="exp-btn json" onclick="exportJSON()">⬇️ JSON</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SETTINGS ── -->
+<div class="page" id="page-settings">
+  <div class="field"><label><strong>Village Name</strong></label><input type="text" id="set-village" placeholder="Village name" oninput="saveSettings()"/></div>
+  <div class="field" style="margin-bottom:16px"><label><strong>Gram Panchayat</strong></label><input type="text" id="set-gp" placeholder="Gram Panchayat name" oninput="saveSettings()"/></div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px">
+    <div style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:8px;letter-spacing:.5px">SYNC STATUS</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div class="sync-dot" id="sync-dot2"></div>
+      <span id="sync-status-text" style="font-size:13px;font-weight:700">Connected</span>
+    </div>
+    <div style="font-size:11px;color:var(--muted)" id="last-sync-text">Syncing in real-time</div>
+  </div>
+  <div class="setting-row" onclick="exportCSV()">
+    <div class="setting-ico" style="background:#431407">📤</div>
+    <div class="setting-text"><div class="setting-title">Export All to CSV</div><div class="setting-sub">Backup all member data</div></div>
+    <div class="setting-arrow">›</div>
+  </div>
+  <div class="setting-row" onclick="clearAllData()">
+    <div class="setting-ico" style="background:#450a0a">🗑️</div>
+    <div class="setting-text"><div class="setting-title">Clear All Data</div><div class="setting-sub">Permanently delete all members</div></div>
+    <div class="setting-arrow" style="color:var(--red)">›</div>
+  </div>
+  <div style="text-align:center;padding:16px;color:var(--muted);font-size:11px">Panchayat Seva v4.0 · Firebase Sync · AI Powered<br/>Data syncs across all your devices in real-time</div>
+</div>
+
+</div><!-- end .pages -->
+
+<button class="fab" id="fab" onclick="startAdd()">+</button>
+
+</div><!-- end #main-app -->
+
+<!-- BULK BAR -->
+<div class="bulkbar" id="bulkbar">
+  <div class="bulkbar-top">
+    <div class="bulkbar-count" id="bulk-count">0 selected</div>
+    <button class="bbar-btn bbar-cancel" onclick="clearSelection()">✕ Cancel</button>
+  </div>
+  <div class="bulkbar-btns">
+    <button class="bbar-btn bbar-ward" onclick="openWardAssign()">🏘️ Assign Ward</button>
+    <button class="bbar-btn bbar-export" onclick="exportSelected()">⬇️ Export</button>
+    <button class="bbar-btn bbar-del" onclick="deleteSelected()">🗑️ Delete</button>
+  </div>
+</div>
+
+<!-- DETAIL PAGE -->
+<div class="detail-page" id="detail-page">
+  <div class="detail-topbar">
+    <button class="detail-back" onclick="closeDetail()">‹</button>
+    <div class="detail-title" id="detail-title">Member Details</div>
+    <button class="detail-edit-btn" onclick="editMember()">✏️ Edit</button>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<!-- CROP MODAL -->
+<div class="modal-bg" id="crop-modal">
+  <div class="crop-box">
+    <div class="crop-title"><span>✂️ Crop Image</span><button onclick="closeCrop()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button></div>
+    <div class="crop-canvas-wrap"><canvas id="cropCanvas"></canvas><div class="crop-overlay"></div></div>
+    <div class="crop-actions"><button class="crop-cancel" onclick="closeCrop()">Cancel</button><button class="crop-confirm" onclick="confirmCrop()">Apply Crop ✓</button></div>
+  </div>
+</div>
+
+<!-- WARD MODAL -->
+<div class="small-modal" id="ward-modal">
+  <div class="small-modal-inner">
+    <div class="small-modal-title">🏘️ Assign Ward</div>
+    <div class="field"><label>Ward Number / Name</label><input type="text" id="ward-inp" placeholder="e.g. Ward 5"/></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-cancel-form" style="flex:1" onclick="closeWardModal()">Cancel</button>
+      <button class="btn-save" style="flex:2" onclick="applyWard()">Assign Ward</button>
+    </div>
+  </div>
+</div>
+
+<!-- SOURCE PICKER SHEET (Camera / Gallery / File) -->
+<div class="src-sheet" id="src-sheet">
+  <div class="src-inner">
+    <div class="src-title" id="src-sheet-title">Choose Source</div>
+    <div class="src-btns">
+      <button class="src-btn camera" onclick="pickSrc('cam')">
+        <span class="src-ico">📷</span>
+        <span class="src-lbl">Camera</span>
+        <span class="src-sub">Take photo now</span>
+      </button>
+      <button class="src-btn gallery" onclick="pickSrc('gal')">
+        <span class="src-ico">🖼️</span>
+        <span class="src-lbl">Gallery / File</span>
+        <span class="src-sub">Choose from phone or PDF</span>
+      </button>
+    </div>
+    <button class="src-cancel-btn" onclick="closeSrcPicker()">Cancel</button>
+  </div>
+</div>
+
+<!-- IMG FULL -->
+<div class="img-full" id="img-full">
+  <button class="img-full-close" onclick="closeImgFull()">✕</button>
+  <img id="img-full-img" src=""/>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══ FIREBASE — loaded here so firebase object exists before our script runs ═══ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ════════════════════════════════════════════════════════
+// FIREBASE CONFIG — Replace with YOUR project config
+// Get it from: console.firebase.google.com → Project Settings
+// ════════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAtMp3TG5DolmvKJYz17OhLoUvcNU66lGA",
+  authDomain: "panchayat-seva.firebaseapp.com",
+  projectId: "panchayat-seva",
+  storageBucket: "panchayat-seva.firebasestorage.app",
+  messagingSenderId: "1074137612057",
+  appId: "1:1074137612057:web:df7bfb09109fc7143c4f88"
+};
+
+const FIREBASE_CONFIGURED = FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY";
+
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+let currentUser = null;
+let firestore = null, auth = null;
+let members = [], filtered = [], selectedIds = new Set();
+let editingId = null, cropDocKey = null;
+let activeWardFilter = '', searchQ = '';
+let firestoreUnsub = null;
+let bulkQueue = []; // {file, dataUrl, status, result}
+let lpTimer = null;
+
+// ════════════════════════════════════════════════════════
+// FIREBASE INIT
+// ════════════════════════════════════════════════════════
+function initFirebase() {
+  // Safety check — if Firebase SDK didn't load (offline APK / slow CDN), fall back
+  if (typeof firebase === 'undefined') {
+    console.warn('Firebase SDK not loaded yet — retrying in 1s…');
+    setTimeout(initFirebase, 1000);
+    return;
+  }
+  if (!FIREBASE_CONFIGURED) {
+    document.getElementById('setup-banner').classList.add('show');
+    startLocalMode();
+    return;
+  }
+  try {
+    // Avoid double-init if called again on retry
+    if (!firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    auth = firebase.auth();
+    firestore = firebase.firestore();
+    // Enable offline persistence for better reliability
+    firestore.enablePersistence({synchronizeTabs: true}).catch(() => {});
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        onLoginSuccess(user);
+      } else {
+        currentUser = null;
+        showAuthScreen();
+      }
+    });
+  } catch(e) {
+    console.error('Firebase init failed:', e);
+    startLocalMode();
+  }
+}
+
+function startLocalMode() {
+  // Use IndexedDB for local-only mode
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('main-app').style.display = 'flex';
+  setSyncStatus('off');
+  document.getElementById('sync-status-text').textContent = 'Offline (Local Only)';
+  document.getElementById('last-sync-text').textContent = 'Connect Firebase for cross-device sync';
+  initLocalDB().then(() => loadLocalMembers());
+}
+
+// ════════════════════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════════════════════
+function switchAuthTab(tab) {
+  document.getElementById('tab-login').classList.toggle('on', tab === 'login');
+  document.getElementById('tab-signup').classList.toggle('on', tab === 'signup');
+  document.getElementById('auth-login-form').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('auth-signup-form').style.display = tab === 'signup' ? 'block' : 'none';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!email || !pass) { setAuthError('login', 'Please fill all fields'); return; }
+  if (!auth) { setAuthError('login', 'App still loading — please wait and try again'); return; }
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(e) {
+    setAuthError('login', friendlyError(e.code));
+  }
+}
+
+async function doSignup() {
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pass = document.getElementById('signup-pass').value;
+  const village = document.getElementById('signup-village').value.trim();
+  if (!name || !email || !pass) { setAuthError('signup', 'Please fill all fields'); return; }
+  if (!auth) { setAuthError('signup', 'App still loading — please wait and try again'); return; }
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({ displayName: name });
+    if (village) {
+      await firestore.collection('users').doc(cred.user.uid).set({
+        name, email, village, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  } catch(e) {
+    setAuthError('signup', friendlyError(e.code));
+  }
+}
+
+async function doGoogleLogin() {
+  if (!FIREBASE_CONFIGURED) { showToast('Firebase not configured','red-t'); return; }
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithPopup(provider);
+  } catch(e) {
+    setAuthError('login', friendlyError(e.code));
+  }
+}
+
+async function doLogout() {
+  if (firestoreUnsub) firestoreUnsub();
+  if (auth) await auth.signOut();
+  members = []; filtered = []; selectedIds.clear();
+  toggleUserMenu(false);
+  showAuthScreen();
+}
+
+function showAuthScreen() {
+  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('main-app').style.display = 'none';
+}
+
+function setAuthError(form, msg) {
+  document.getElementById(form + '-error').textContent = msg;
+}
+function friendlyError(code) {
+  const map = {
+    'auth/wrong-password': 'Incorrect password',
+    'auth/user-not-found': 'No account with this email',
+    'auth/email-already-in-use': 'Email already registered',
+    'auth/weak-password': 'Password must be at least 6 characters',
+    'auth/invalid-email': 'Invalid email address',
+    'auth/popup-closed-by-user': 'Sign-in cancelled',
+    'auth/network-request-failed': 'Network error. Check connection.'
+  };
+  return map[code] || 'Error: ' + code;
+}
+
+// ════════════════════════════════════════════════════════
+// LOGIN SUCCESS → START APP
+// ════════════════════════════════════════════════════════
+async function onLoginSuccess(user) {
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('main-app').style.display = 'flex';
+
+  // User avatar
+  const ua = document.getElementById('user-avatar');
+  if (user.photoURL) ua.innerHTML = `<img src="${user.photoURL}"/>`;
+  else ua.textContent = (user.displayName || user.email || '?')[0].toUpperCase();
+  document.getElementById('user-menu-email').textContent = user.email;
+
+  // Load village settings
+  try {
+    const snap = await firestore.collection('users').doc(user.uid).get();
+    if (snap.exists) {
+      const d = snap.data();
+      if (d.village) {
+        document.getElementById('set-village').value = d.village;
+        document.getElementById('topbar-village').textContent = d.village + (d.gp ? ' · ' + d.gp : '');
+      }
+      if (d.gp) document.getElementById('set-gp').value = d.gp;
+    }
+  } catch(e) {}
+
+  // Subscribe to real-time member updates
+  subscribeMembers(user.uid);
+}
+
+// ════════════════════════════════════════════════════════
+// IMAGE COMPRESSION — keeps photos small for Firestore
+// Firestore limit: 1MB per document. We compress to ~50KB each.
+// ════════════════════════════════════════════════════════
+function compressImage(dataUrl, maxW=400, maxH=400, quality=0.55) {
+  return new Promise(res => {
+    if (!dataUrl || !dataUrl.startsWith('data:image')) { res(dataUrl); return; }
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      const ratio = Math.min(maxW/w, maxH/h, 1);
+      w = Math.round(w * ratio); h = Math.round(h * ratio);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      res(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => res(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+// Compress doc photos (smaller — these are document scans)
+function compressDocImage(dataUrl) {
+  return compressImage(dataUrl, 800, 600, 0.6);
+}
+
+// Compress profile photo (tiny thumbnail)
+function compressProfilePhoto(dataUrl) {
+  return compressImage(dataUrl, 200, 200, 0.7);
+}
+
+// Estimate base64 size in bytes
+function b64Size(str) { return str ? Math.round((str.length * 3) / 4) : 0; }
+
+// ════════════════════════════════════════════════════════
+// REAL-TIME FIRESTORE SYNC
+// ════════════════════════════════════════════════════════
+function subscribeMembers(uid) {
+  if (firestoreUnsub) firestoreUnsub();
+  setSyncStatus('syncing');
+
+  firestoreUnsub = firestore
+    .collection('users').doc(uid)
+    .collection('members')
+    .orderBy('addedOn', 'asc')
+    .onSnapshot(snap => {
+      members = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setSyncStatus('on');
+      buildWardChips();
+      applyFilter();
+      const now = new Date().toLocaleTimeString('en-IN');
+      document.getElementById('last-sync-text').textContent = 'Last sync: ' + now;
+    }, err => {
+      console.error('Sync error:', err);
+      setSyncStatus('off');
+    });
+}
+
+async function putMemberCloud(m) {
+  if (!currentUser || !firestore) { putMemberLocal(m); return; }
+  setSyncStatus('syncing');
+
+  // Compress all images before saving to Firestore (free plan, 1MB doc limit)
+  const compressed = { ...m };
+  if (compressed.photo) compressed.photo = await compressProfilePhoto(compressed.photo);
+  if (compressed.docAadhaar) compressed.docAadhaar = await compressDocImage(compressed.docAadhaar);
+  if (compressed.docPan) compressed.docPan = await compressDocImage(compressed.docPan);
+  if (compressed.docVoter) compressed.docVoter = await compressDocImage(compressed.docVoter);
+  if (compressed.docBank) compressed.docBank = await compressDocImage(compressed.docBank);
+
+  // Check total size — Firestore max is 1MB per document
+  const photoFields = ['photo','docAadhaar','docPan','docVoter','docBank'];
+  let totalSize = JSON.stringify(compressed).length;
+
+  // If still too large, strip doc images and save them separately in subcollection
+  if (totalSize > 900000) {
+    const docImages = {};
+    photoFields.forEach(k => { if (compressed[k]) { docImages[k] = compressed[k]; delete compressed[k]; } });
+    // Save doc images in separate subcollection doc (no 1MB limit issue this way)
+    try {
+      await firestore.collection('users').doc(currentUser.uid)
+        .collection('member_docs').doc(m.id).set(docImages);
+    } catch(e) { console.warn('Doc images save failed', e); }
+  }
+
+  const { id, ...data } = compressed;
+  await firestore.collection('users').doc(currentUser.uid)
+    .collection('members').doc(id).set(data);
+}
+
+async function deleteMemberCloud(id) {
+  if (!currentUser || !firestore) { deleteMemberLocal(id); return; }
+  await firestore.collection('users').doc(currentUser.uid)
+    .collection('members').doc(id).delete();
+}
+
+function setSyncStatus(status) {
+  const d1 = document.getElementById('sync-dot');
+  const d2 = document.getElementById('sync-dot2');
+  const txt = document.getElementById('sync-status-text');
+  [d1, d2].forEach(d => {
+    if (!d) return;
+    d.className = 'sync-dot' + (status === 'off' ? ' off' : status === 'syncing' ? ' syncing' : '');
+  });
+  if (txt) txt.textContent = status === 'on' ? '✓ Connected & Syncing' : status === 'off' ? '✗ Offline' : '⟳ Syncing…';
+}
+
+// ════════════════════════════════════════════════════════
+// LOCAL DB (offline fallback / no Firebase)
+// ════════════════════════════════════════════════════════
+let localDB = null;
+function initLocalDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('PanchayatSevaLocal', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('members', { keyPath: 'id' });
+    req.onsuccess = e => { localDB = e.target.result; res(); };
+    req.onerror = () => rej();
+  });
+}
+function loadLocalMembers() {
+  if (!localDB) return;
+  const tx = localDB.transaction('members', 'readonly');
+  const req = tx.objectStore('members').getAll();
+  req.onsuccess = () => {
+    members = req.result || [];
+    buildWardChips(); applyFilter();
+  };
+}
+function putMemberLocal(m) {
+  if (!localDB) return;
+  const tx = localDB.transaction('members', 'readwrite');
+  tx.objectStore('members').put(m);
+}
+function deleteMemberLocal(id) {
+  if (!localDB) return;
+  const tx = localDB.transaction('members', 'readwrite');
+  tx.objectStore('members').delete(id);
+}
+
+// ════════════════════════════════════════════════════════
+// VIRTUAL SCROLL (handles 3000+)
+// ════════════════════════════════════════════════════════
+const ROW_H = 85;
+let vsWrap, vsInner, vsItems;
+function initVS() {
+  vsWrap = document.getElementById('vscroll-wrap');
+  vsInner = document.getElementById('vscroll-inner');
+  vsItems = document.getElementById('vscroll-items');
+  vsWrap.addEventListener('scroll', renderVisibleRows, { passive: true });
+}
+function renderList() {
+  const tot = filtered.length;
+  document.getElementById('empty-state').style.display = tot === 0 ? 'block' : 'none';
+  vsInner.style.height = (tot * ROW_H) + 'px';
+  renderVisibleRows();
+}
+function renderVisibleRows() {
+  const st = vsWrap.scrollTop, vh = vsWrap.clientHeight, tot = filtered.length;
+  const start = Math.max(0, Math.floor(st / ROW_H) - 5);
+  const end = Math.min(tot, Math.ceil((st + vh) / ROW_H) + 5);
+  vsItems.style.top = (start * ROW_H) + 'px';
+  let html = '';
+  for (let i = start; i < end; i++) html += rowHTML(filtered[i], selectedIds.has(filtered[i].id));
+  vsItems.innerHTML = html;
+}
+function rowHTML(m, sel) {
+  const av = m.photo
+    ? `<img src="${m.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`
+    : `<span>${m.gender === 'Female' ? '👩' : '👨'}</span>`;
+  let b = '';
+  if (m.aadhaar) b += `<span class="badge bb">ADH</span>`;
+  if (m.pan) b += `<span class="badge bg">PAN</span>`;
+  if (m.bankAcc) b += `<span class="badge bv">BANK</span>`;
+  if (m.voter) b += `<span class="badge bo">VOTER</span>`;
+  if (m.ration) b += `<span class="badge br">RATION</span>`;
+  return `<div class="mrow${sel ? ' sel' : ''}" onclick="rowClick(event,'${m.id}')" data-id="${m.id}">
+    <div class="mcheck">${sel ? '✓' : ''}</div>
+    <div class="mavatar">${av}</div>
+    <div class="minfo">
+      <div class="mname">${esc(m.name)}</div>
+      <div class="msub">${esc(m.mobile || m.address || 'No contact')}</div>
+      <div class="mbadges">${b || '<span style="font-size:10px;color:var(--muted)">No docs</span>'}</div>
+    </div>
+    <div class="mward">${esc(m.ward || '–')}</div>
+  </div>`;
+}
+
+function rowClick(e, id) {
+  if (selectedIds.size > 0) { toggleSel(id); return; }
+  openDetail(id);
+}
+function toggleSel(id) {
+  selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id);
+  updateBulkBar(); renderVisibleRows();
+}
+function updateBulkBar() {
+  document.getElementById('bulk-count').textContent = selectedIds.size + ' selected';
+  document.getElementById('bulkbar').classList.toggle('show', selectedIds.size > 0);
+}
+function clearSelection() { selectedIds.clear(); updateBulkBar(); renderVisibleRows(); }
+
+// ════════════════════════════════════════════════════════
+// SEARCH & FILTER
+// ════════════════════════════════════════════════════════
+function onSearch() { searchQ = document.getElementById('search-inp').value.toLowerCase(); applyFilter(); }
+function applyFilter() {
+  filtered = members.filter(m => {
+    if (activeWardFilter && m.ward !== activeWardFilter) return false;
+    if (!searchQ) return true;
+    return ['name','aadhaar','mobile','ward','pan','voter','address','relative','bankAcc'].some(k => (m[k]||'').toLowerCase().includes(searchQ));
+  });
+  renderList(); updateStats();
+}
+function toggleGroup() { document.getElementById('grp-btn').classList.toggle('active'); }
+function buildWardChips() {
+  const wards = [...new Set(members.map(m => m.ward).filter(Boolean))].sort();
+  let h = `<div class="chip${!activeWardFilter ? ' on' : ''}" onclick="setWardFilter('')">All (${members.length})</div>`;
+  wards.forEach(w => {
+    const cnt = members.filter(m => m.ward === w).length;
+    h += `<div class="chip${activeWardFilter === w ? ' on' : ''}" onclick="setWardFilter('${esc(w)}')">${esc(w)} <span style="opacity:.6">${cnt}</span></div>`;
+  });
+  document.getElementById('ward-chips').innerHTML = h;
+}
+function setWardFilter(w) { activeWardFilter = w; buildWardChips(); applyFilter(); }
+
+function updateStats() {
+  const tot = members.length;
+  document.getElementById('s-total').textContent = tot.toLocaleString();
+  document.getElementById('s-aadhaar').textContent = members.filter(m => m.aadhaar).length;
+  document.getElementById('s-bank').textContent = members.filter(m => m.bankAcc).length;
+  document.getElementById('s-pending').textContent = members.filter(m => !m.aadhaar || !m.bankAcc).length;
+  document.getElementById('topbar-count').textContent = tot.toLocaleString() + ' Members';
+}
+
+// ════════════════════════════════════════════════════════
+// ═══════════════ BULK AI FILE PROCESSING ════════════════
+// ════════════════════════════════════════════════════════
+function onBulkDragOver(e) { e.preventDefault(); document.getElementById('bulk-drop-zone').classList.add('dragover'); }
+function onBulkDragLeave(e) { document.getElementById('bulk-drop-zone').classList.remove('dragover'); }
+function onBulkDrop(e) {
+  e.preventDefault();
+  document.getElementById('bulk-drop-zone').classList.remove('dragover');
+  const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/') || f.type === 'application/pdf');
+  addFilesToQueue(files);
+}
+function onBulkFilesSelected(inp) {
+  addFilesToQueue([...inp.files]);
+  inp.value = '';
+}
+function addFilesToQueue(files) {
+  files.forEach(file => {
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
+    bulkQueue.push({ id, file, dataUrl: null, status: 'pending', result: null, matchedMember: null });
+  });
+  renderBulkQueue();
+  document.getElementById('bulk-run-btn').disabled = bulkQueue.length === 0;
+  document.getElementById('fq-clear').style.display = bulkQueue.length > 0 ? 'block' : 'none';
+  document.getElementById('fq-title').textContent = `${bulkQueue.length} file${bulkQueue.length !== 1 ? 's' : ''} queued`;
+  // Load previews
+  bulkQueue.forEach(item => {
+    if (!item.dataUrl && item.file) {
+      const r = new FileReader();
+      r.onload = e => { item.dataUrl = e.target.result; renderBulkQueue(); };
+      r.readAsDataURL(item.file);
+    }
+  });
+}
+function clearBulkQueue() {
+  bulkQueue = [];
+  renderBulkQueue();
+  document.getElementById('bulk-run-btn').disabled = true;
+  document.getElementById('fq-clear').style.display = 'none';
+  document.getElementById('fq-title').textContent = 'Files will appear here after selection';
+  document.getElementById('bulk-progress').classList.remove('show');
+}
+function renderBulkQueue() {
+  const list = document.getElementById('fq-list');
+  list.innerHTML = bulkQueue.map(item => {
+    const thumb = item.dataUrl
+      ? `<div class="fq-thumb"><img src="${item.dataUrl}" style="width:100%;height:100%;object-fit:cover"/></div>`
+      : `<div class="fq-thumb">📄</div>`;
+    let statusText = '', statusClass = '', badgeText = '', badgeClass = '';
+    switch (item.status) {
+      case 'pending':
+        statusText = 'Waiting for AI scan'; statusClass = 'pending';
+        badgeText = 'PENDING'; badgeClass = '';
+        break;
+      case 'scanning':
+        statusText = 'AI scanning document…'; statusClass = 'scanning';
+        badgeText = 'SCANNING'; badgeClass = 'scanning';
+        break;
+      case 'matched':
+        statusText = `Matched: ${item.matchedMember?.name || '?'}`; statusClass = 'matched';
+        badgeText = 'MATCHED'; badgeClass = 'matched';
+        break;
+      case 'new-person':
+        statusText = `New: ${item.result?.name || 'Unknown person'}`; statusClass = 'new-person';
+        badgeText = 'NEW PROFILE'; badgeClass = 'new';
+        break;
+      case 'saved':
+        statusText = '✓ Saved to profile'; statusClass = 'matched';
+        badgeText = 'SAVED'; badgeClass = 'matched';
+        break;
+      case 'error':
+        statusText = 'Could not read document'; statusClass = 'error';
+        badgeText = 'ERROR'; badgeClass = 'error';
+        break;
+    }
+    const resultRows = item.result && item.status !== 'error' ? `
+      <div class="ai-result-card">
+        ${item.result.name ? `<div class="ai-result-row"><span class="ai-result-label">Name</span><span class="ai-result-value">${esc(item.result.name)}</span></div>` : ''}
+        ${item.result.aadhaar ? `<div class="ai-result-row"><span class="ai-result-label">Aadhaar</span><span class="ai-result-value">${esc(item.result.aadhaar)}</span></div>` : ''}
+        ${item.result.pan ? `<div class="ai-result-row"><span class="ai-result-label">PAN</span><span class="ai-result-value">${esc(item.result.pan)}</span></div>` : ''}
+        ${item.result.voter ? `<div class="ai-result-row"><span class="ai-result-label">Voter ID</span><span class="ai-result-value">${esc(item.result.voter)}</span></div>` : ''}
+        ${item.result.bankAcc ? `<div class="ai-result-row"><span class="ai-result-label">Account</span><span class="ai-result-value">${esc(item.result.bankAcc)}</span></div>` : ''}
+        ${item.result.docType ? `<div class="ai-result-row"><span class="ai-result-label">Doc Type</span><span class="ai-result-value">${esc(item.result.docType)}</span></div>` : ''}
+        ${item.matchedMember ? `
+          <div class="match-profile">
+            <span style="font-size:18px">${item.matchedMember.gender === 'Female' ? '👩' : '👨'}</span>
+            <div style="flex:1"><div class="match-profile-name">${esc(item.matchedMember.name)}</div><div style="font-size:10px;color:var(--muted)">${esc(item.matchedMember.ward || '')} · ${esc(item.matchedMember.mobile || '')}</div></div>
+            <span class="match-confidence">${item.confidence || ''}% match</span>
+          </div>
+          ${item.status !== 'saved' ? `<div class="match-actions">
+            <button class="match-btn accept" onclick="acceptMatch('${item.id}')">✓ Add to Profile</button>
+            <button class="match-btn new-profile" onclick="createNewFromBulk('${item.id}')">+ New Profile</button>
+            <button class="match-btn skip" onclick="skipBulkItem('${item.id}')">Skip</button>
+          </div>` : ''}
+        ` : (item.status === 'new-person' && item.status !== 'saved') ? `
+          <div class="match-actions">
+            <button class="match-btn accept" onclick="saveNewFromBulk('${item.id}')">💾 Save New Profile</button>
+            <button class="match-btn skip" onclick="skipBulkItem('${item.id}')">Skip</button>
+          </div>
+        ` : ''}
+      </div>` : '';
+    return `<div class="fq-item" id="fqi-${item.id}">
+      ${thumb}
+      <div class="fq-info">
+        <div class="fq-name">${esc(item.file?.name || 'File')}</div>
+        <div class="fq-status ${statusClass}">${statusText}</div>
+        ${resultRows}
+      </div>
+      <span class="fq-badge ${badgeClass}">${badgeText}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── THE MAIN BULK AI ENGINE ──
+const BULK_PROMPT = `You are analyzing a document image from India. Identify the document type and extract all available information.
+
+Return ONLY a valid JSON object with these fields (leave empty string "" if not found):
+{
+  "docType": "aadhaar|pan|voter|ration|passbook|cheque|photo|other",
+  "name": "",
+  "nameOnDoc": "",
+  "aadhaar": "",
+  "pan": "",
+  "voter": "",
+  "ration": "",
+  "dob": "",
+  "gender": "",
+  "address": "",
+  "mobile": "",
+  "bankAcc": "",
+  "ifsc": "",
+  "bankName": "",
+  "bankAccName": ""
+}
+
+Be accurate. Extract exact numbers as shown on the document. No extra text outside JSON.`;
+
+async function runBulkAI() {
+  const pending = bulkQueue.filter(i => i.status === 'pending' && i.dataUrl);
+  if (pending.length === 0) { showToast('No files to process','red-t'); return; }
+
+  const btn = document.getElementById('bulk-run-btn');
+  btn.disabled = true; btn.textContent = '⏳ Processing…';
+  const prog = document.getElementById('bulk-progress');
+  prog.classList.add('show');
+
+  let matched = 0, newProfiles = 0, errors = 0;
+
+  for (let i = 0; i < pending.length; i++) {
+    const item = pending[i];
+    item.status = 'scanning';
+    renderBulkQueue();
+
+    // Update progress
+    const pct = Math.round((i / pending.length) * 100);
+    document.getElementById('bp-fill').style.width = pct + '%';
+    document.getElementById('bp-pct').textContent = pct + '%';
+    document.getElementById('bp-label-text').textContent = `Processing ${i + 1} of ${pending.length}…`;
+
+    try {
+      const base64 = item.dataUrl.split(',')[1];
+      const mt = item.dataUrl.match(/data:([^;]+)/)[1];
+
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 500,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: mt, data: base64 } },
+              { type: 'text', text: BULK_PROMPT }
+            ]
+          }]
+        })
+      });
+
+      const data = await resp.json();
+      const txt = (data.content || []).map(c => c.text || '').join('');
+      const result = JSON.parse(txt.replace(/```json|```/g, '').trim());
+      item.result = result;
+
+      // Try to match to existing member
+      const match = findBestMatch(result);
+      if (match) {
+        item.matchedMember = match.member;
+        item.confidence = match.confidence;
+        item.status = 'matched';
+        matched++;
+      } else {
+        item.status = 'new-person';
+        newProfiles++;
+      }
+    } catch(e) {
+      item.status = 'error';
+      errors++;
+    }
+
+    // Update counters
+    document.getElementById('bp-matched').textContent = matched;
+    document.getElementById('bp-new').textContent = newProfiles;
+    document.getElementById('bp-error').textContent = errors;
+
+    renderBulkQueue();
+    // Small delay to avoid rate limiting
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  document.getElementById('bp-fill').style.width = '100%';
+  document.getElementById('bp-pct').textContent = '100%';
+  document.getElementById('bp-label-text').textContent = 'Processing complete!';
+  btn.disabled = false;
+  btn.textContent = `🤖 Process Again`;
+  showToast(`Done! ${matched} matched, ${newProfiles} new, ${errors} errors`, 'purple-t');
+}
+
+// ── SMART MATCHING ENGINE ──
+function findBestMatch(result) {
+  if (!result.name && !result.aadhaar && !result.pan && !result.voter) return null;
+  let best = null, bestScore = 0;
+
+  for (const m of members) {
+    let score = 0;
+    // Exact Aadhaar match
+    if (result.aadhaar && m.aadhaar && result.aadhaar.replace(/\s/g,'') === m.aadhaar.replace(/\s/g,'')) score += 90;
+    // Exact PAN match
+    if (result.pan && m.pan && result.pan.toUpperCase() === m.pan.toUpperCase()) score += 85;
+    // Exact Voter ID match
+    if (result.voter && m.voter && result.voter.toUpperCase() === m.voter.toUpperCase()) score += 85;
+    // Name similarity
+    if (result.name && m.name) score += nameSimilarity(result.name, m.name) * 40;
+    // Mobile match
+    if (result.mobile && m.mobile && result.mobile === m.mobile) score += 30;
+
+    if (score > bestScore && score >= 50) {
+      bestScore = score;
+      best = { member: m, confidence: Math.min(99, score) };
+    }
+  }
+  return best;
+}
+
+function nameSimilarity(a, b) {
+  a = a.toLowerCase().trim(); b = b.toLowerCase().trim();
+  if (a === b) return 1;
+  const wa = a.split(' '), wb = b.split(' ');
+  let matches = 0;
+  wa.forEach(w => { if (wb.some(x => x === w || (w.length > 3 && x.includes(w)))) matches++; });
+  return matches / Math.max(wa.length, wb.length);
+}
+
+// ── BULK ACTION HANDLERS ──
+async function acceptMatch(itemId) {
+  const item = bulkQueue.find(i => i.id === itemId);
+  if (!item || !item.matchedMember) return;
+  const m = { ...item.matchedMember };
+  const r = item.result;
+  // Merge fields from scanned doc into existing profile
+  if (r.aadhaar && !m.aadhaar) m.aadhaar = r.aadhaar.replace(/\s/g,'');
+  if (r.pan && !m.pan) m.pan = r.pan.toUpperCase();
+  if (r.voter && !m.voter) m.voter = r.voter.toUpperCase();
+  if (r.bankAcc && !m.bankAcc) m.bankAcc = r.bankAcc;
+  if (r.ifsc && !m.ifsc) m.ifsc = r.ifsc.toUpperCase();
+  if (r.bankName && !m.bankName) m.bankName = r.bankName;
+  if (r.bankAccName && !m.bankAccName) m.bankAccName = r.bankAccName;
+  if (r.dob && !m.dob) m.dob = r.dob;
+  if (r.gender && !m.gender) m.gender = r.gender;
+  if (r.address && !m.address) m.address = r.address;
+  if (r.mobile && !m.mobile) m.mobile = r.mobile;
+  // Attach document image to correct field
+  const docField = { aadhaar:'docAadhaar', pan:'docPan', voter:'docVoter', ration:'docRation', passbook:'docBank', cheque:'docBank' };
+  const df = docField[r.docType];
+  if (df && item.dataUrl) m[df] = item.dataUrl;
+  m.updatedOn = Date.now();
+  await putMemberCloud(m);
+  item.status = 'saved';
+  renderBulkQueue();
+  showToast(`✓ Document added to ${m.name}'s profile`, 'green-t');
+}
+
+async function saveNewFromBulk(itemId) {
+  const item = bulkQueue.find(i => i.id === itemId);
+  if (!item || !item.result) return;
+  const r = item.result;
+  const docField = { aadhaar:'docAadhaar', pan:'docPan', voter:'docVoter', ration:'docRation', passbook:'docBank', cheque:'docBank' };
+  const newM = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+    name: r.name || r.nameOnDoc || 'Unknown',
+    aadhaar: (r.aadhaar || '').replace(/\s/g,''), pan: (r.pan || '').toUpperCase(),
+    voter: (r.voter || '').toUpperCase(), ration: r.ration || '',
+    dob: r.dob || '', gender: r.gender || '', address: r.address || '',
+    mobile: r.mobile || '', bankAcc: r.bankAcc || '', ifsc: (r.ifsc || '').toUpperCase(),
+    bankName: r.bankName || '', bankAccName: r.bankAccName || '',
+    addedOn: Date.now(), updatedOn: Date.now()
+  };
+  const df = docField[r.docType];
+  if (df && item.dataUrl) newM[df] = item.dataUrl;
+  await putMemberCloud(newM);
+  item.status = 'saved';
+  renderBulkQueue();
+  showToast(`✓ New profile created: ${newM.name}`, 'green-t');
+}
+
+function createNewFromBulk(itemId) {
+  const item = bulkQueue.find(i => i.id === itemId);
+  if (!item) return;
+  // Override match — treat as new
+  item.matchedMember = null;
+  item.status = 'new-person';
+  renderBulkQueue();
+}
+
+function skipBulkItem(itemId) {
+  const item = bulkQueue.find(i => i.id === itemId);
+  if (item) { item.status = 'pending'; item.result = null; item.matchedMember = null; renderBulkQueue(); }
+}
+
+// ════════════════════════════════════════════════════════
+// FORM & SAVE
+// ════════════════════════════════════════════════════════
+const FIDS = ['name','dob','mobile','address','ward','relative','occupation','aadhaar','pan','voter','ration','pmkisan','mgnrega','ayushman','notes','acc-no','ifsc','acc-name'];
+const SELIDS = ['gender','category','bank-name','acc-type'];
+
+function clearForm() {
+  FIDS.forEach(f => { const el = document.getElementById('f-'+f); if(el) el.value = ''; });
+  SELIDS.forEach(f => { const el = document.getElementById('f-'+f); if(el) el.selectedIndex = 0; });
+  const pi = document.getElementById('form-photo-img'); pi.src = ''; pi.style.display = 'none';
+  document.getElementById('form-photo-icon').style.display = '';
+  ['aadhaar','pan','voter','bank'].forEach(clearDoc);
+  document.getElementById('page-add').querySelector('[style*="overflow-y"]').scrollTop = 0;
+}
+function gv(id) { const el = document.getElementById('f-'+id); return el ? el.value.trim() : ''; }
+function getDoc(k) {
+  const img = document.getElementById('prev-'+k);
+  if (!img) return '';
+  // PDF stored in dataset
+  if (img.dataset.pdfData) return img.dataset.pdfData;
+  return img.style.display !== 'none' && img.src ? img.src : '';
+}
+function getFormData() {
+  const photo = document.getElementById('form-photo-img');
+  return {
+    id: editingId || Date.now().toString(36) + Math.random().toString(36).slice(2),
+    name:gv('name'),dob:gv('dob'),gender:gv('gender'),mobile:gv('mobile'),
+    address:gv('address'),ward:gv('ward'),category:gv('category'),
+    relative:gv('relative'),occupation:gv('occupation'),
+    aadhaar:gv('aadhaar').replace(/\s/g,''),pan:gv('pan').toUpperCase(),
+    voter:gv('voter').toUpperCase(),ration:gv('ration'),
+    pmkisan:gv('pmkisan'),mgnrega:gv('mgnrega'),ayushman:gv('ayushman'),notes:gv('notes'),
+    bankName:gv('bank-name'),bankAcc:gv('acc-no'),ifsc:gv('ifsc').toUpperCase(),
+    bankAccType:gv('acc-type'),bankAccName:gv('acc-name'),
+    photo:photo.src && photo.src.startsWith('data:') ? photo.src : '',
+    docAadhaar:getDoc('aadhaar'),docPan:getDoc('pan'),docVoter:getDoc('voter'),docBank:getDoc('bank'),
+    addedOn:editingId?(members.find(m=>m.id===editingId)||{}).addedOn||Date.now():Date.now(),
+    updatedOn:Date.now()
+  };
+}
+async function saveMember() {
+  const m = getFormData();
+  if (!m.name) { showToast('⚠️ Full Name required','red-t'); return; }
+  await putMemberCloud(m);
+  editingId = null; showPage('members');
+  showToast(m.name + ' saved ✓', 'green-t');
+}
+function populateForm(m) {
+  const s = (id,v) => { const el = document.getElementById('f-'+id); if(el) el.value = v||''; };
+  s('name',m.name);s('dob',m.dob);s('gender',m.gender);s('mobile',m.mobile);
+  s('address',m.address);s('ward',m.ward);s('category',m.category);
+  s('relative',m.relative);s('occupation',m.occupation);
+  s('aadhaar',m.aadhaar?m.aadhaar.replace(/(\d{4})(?=\d)/g,'$1 '):'');
+  s('pan',m.pan);s('voter',m.voter);s('ration',m.ration);
+  s('pmkisan',m.pmkisan);s('mgnrega',m.mgnrega);s('ayushman',m.ayushman);s('notes',m.notes);
+  s('bank-name',m.bankName);s('acc-no',m.bankAcc);s('ifsc',m.ifsc);s('acc-type',m.bankAccType);s('acc-name',m.bankAccName);
+  if (m.photo) { const img = document.getElementById('form-photo-img'); img.src = m.photo; img.style.display = 'block'; document.getElementById('form-photo-icon').style.display = 'none'; }
+  const showDoc = (k,src) => {
+    if (!src) return;
+    const pr = document.getElementById('prev-'+k); pr.src = src; pr.style.display = 'block';
+    document.getElementById('doc-'+k).classList.add('has-img');
+    document.getElementById('btns-'+k).style.display = 'flex';
+  };
+  showDoc('aadhaar',m.docAadhaar);showDoc('pan',m.docPan);showDoc('voter',m.docVoter);showDoc('bank',m.docBank);
+}
+
+// ════════════════════════════════════════════════════════
+// PHOTO & DOCS
+// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════
+// SOURCE PICKER — Camera vs Gallery/File
+// ════════════════════════════════════════════════════════
+let srcPickerKey = null;
+
+function openSrcPicker(key) {
+  srcPickerKey = key;
+  const titles = {
+    profile: 'Add Profile Photo',
+    aadhaar: 'Upload Aadhaar Card',
+    pan: 'Upload PAN Card',
+    voter: 'Upload Voter ID',
+    bank: 'Upload Passbook / Cheque'
+  };
+  document.getElementById('src-sheet-title').textContent = titles[key] || 'Choose Source';
+  document.getElementById('src-sheet').classList.add('show');
+}
+
+function closeSrcPicker() {
+  document.getElementById('src-sheet').classList.remove('show');
+  srcPickerKey = null;
+}
+
+function pickSrc(src) {
+  closeSrcPicker();
+  if (!srcPickerKey) return;
+  const key = srcPickerKey;
+  if (key === 'profile') {
+    document.getElementById(src === 'cam' ? 'photo-file-cam' : 'photo-file-gal').click();
+  } else {
+    document.getElementById(`file-${key}-${src}`).click();
+  }
+}
+
+// kept for backward compat (bulk AI still uses this)
+function triggerDoc(k) { openSrcPicker(k); }
+function triggerPhotoUpload() { openSrcPicker('profile'); }
+
+function handlePhotoUpload(inp) {
+  const f = inp.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = async e => {
+    const compressed = await compressProfilePhoto(e.target.result);
+    const img = document.getElementById('form-photo-img');
+    img.src = compressed; img.style.display = 'block';
+    document.getElementById('form-photo-icon').style.display = 'none';
+  };
+  r.readAsDataURL(f); inp.value = '';
+}
+function triggerDoc(k) { openSrcPicker(k); }
+
+function handleDoc(k, inp) {
+  const f = inp.files[0]; if (!f) return;
+
+  // PDF — render first page to canvas then process as image
+  if (f.type === 'application/pdf') {
+    showToast('Reading PDF…');
+    const url = URL.createObjectURL(f);
+    // Use browser's PDF renderer via an iframe trick
+    const reader = new FileReader();
+    reader.onload = async e => {
+      // Fallback: just show a placeholder and skip AI for PDFs without pdf.js
+      showToast('PDF uploaded — AI scan works best with image files', 'purple-t');
+      // Still store a data url reference
+      const src = e.target.result;
+      const pr = document.getElementById('prev-'+k);
+      // Show PDF icon since we can't render it to img
+      pr.style.display = 'none';
+      document.getElementById('doc-'+k).classList.add('has-img');
+      document.getElementById('btns-'+k).style.display = 'flex';
+      // Store raw base64 for saving
+      pr.dataset.pdfData = src;
+      pr.src = ''; // can't show PDF in img tag
+    };
+    reader.readAsDataURL(f);
+    inp.value = '';
+    return;
+  }
+
+  // Image file
+  const r = new FileReader();
+  r.onload = async e => {
+    const src = await compressDocImage(e.target.result);
+    const pr = document.getElementById('prev-'+k);
+    pr.src = src; pr.style.display = 'block';
+    pr.dataset.pdfData = '';
+    document.getElementById('doc-'+k).classList.add('has-img');
+    document.getElementById('btns-'+k).style.display = 'flex';
+    aiScanDoc(k, src);
+  };
+  r.readAsDataURL(f); inp.value = '';
+}
+function clearDoc(k) {
+  const pr = document.getElementById('prev-'+k);
+  pr.src = ''; pr.style.display = 'none';
+  if (pr.dataset) pr.dataset.pdfData = '';
+  document.getElementById('doc-'+k).classList.remove('has-img');
+  document.getElementById('btns-'+k).style.display = 'none';
+  document.getElementById('ai-'+k).classList.remove('show');
+  document.getElementById('done-'+k).classList.remove('show');
+}
+
+// ── Single-doc AI scan ──
+const PROMPTS = {
+  aadhaar: `Extract Aadhaar card details. Return ONLY JSON: {"aadhaar":"","name":"","dob":"","gender":""}`,
+  pan: `Extract PAN card details. Return ONLY JSON: {"pan":"","name":"","dob":""}`,
+  voter: `Extract Voter ID details. Return ONLY JSON: {"voter":"","name":"","dob":""}`,
+  bank: `Extract bank passbook/cheque details. Return ONLY JSON: {"bankAcc":"","ifsc":"","bankName":"","bankAccName":""}`
+};
+const FILL = {
+  aadhaar: d => {
+    if (d.aadhaar) document.getElementById('f-aadhaar').value = d.aadhaar.replace(/\D/g,'').slice(0,12).replace(/(\d{4})(?=\d)/g,'$1 ');
+    if (d.name && !document.getElementById('f-name').value) document.getElementById('f-name').value = d.name;
+    if (d.dob && !document.getElementById('f-dob').value) document.getElementById('f-dob').value = d.dob;
+    if (d.gender && !document.getElementById('f-gender').value) document.getElementById('f-gender').value = d.gender;
+  },
+  pan: d => {
+    if (d.pan) document.getElementById('f-pan').value = d.pan.toUpperCase();
+    if (d.name && !document.getElementById('f-name').value) document.getElementById('f-name').value = d.name;
+  },
+  voter: d => {
+    if (d.voter) document.getElementById('f-voter').value = d.voter.toUpperCase();
+    if (d.name && !document.getElementById('f-name').value) document.getElementById('f-name').value = d.name;
+  },
+  bank: d => {
+    if (d.bankAcc) document.getElementById('f-acc-no').value = d.bankAcc;
+    if (d.ifsc) document.getElementById('f-ifsc').value = d.ifsc.toUpperCase();
+    if (d.bankName) { const s=document.getElementById('f-bank-name');[...s.options].forEach(o=>{if(o.text.toLowerCase().includes((d.bankName||'').toLowerCase()))s.value=o.value;}); }
+    if (d.bankAccName) document.getElementById('f-acc-name').value = d.bankAccName;
+  }
+};
+async function aiScanDoc(key, imgData) {
+  document.getElementById('ai-'+key).classList.add('show');
+  document.getElementById('done-'+key).classList.remove('show');
+  try {
+    const base64 = imgData.split(',')[1], mt = imgData.match(/data:([^;]+)/)[1];
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:mt,data:base64}},
+          {type:'text',text:PROMPTS[key]}
+        ]}]
+      })
+    });
+    const data = await resp.json();
+    const txt = (data.content||[]).map(c=>c.text||'').join('');
+    FILL[key](JSON.parse(txt.replace(/```json|```/g,'').trim()));
+    document.getElementById('ai-'+key).classList.remove('show');
+    document.getElementById('done-'+key).classList.add('show');
+    setTimeout(() => document.getElementById('done-'+key).classList.remove('show'), 4000);
+  } catch(e) {
+    document.getElementById('ai-'+key).classList.remove('show');
+    showToast('AI scan failed — fill manually','red-t');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// CROP MODAL
+// ════════════════════════════════════════════════════════
+function openCrop(key) {
+  cropDocKey = key;
+  const src = document.getElementById('prev-'+key).src; if (!src) return;
+  const canvas = document.getElementById('cropCanvas');
+  const img = new Image();
+  img.onload = () => { canvas.width = img.width; canvas.height = img.height; canvas.getContext('2d').drawImage(img,0,0); };
+  img.src = src;
+  document.getElementById('crop-modal').classList.add('show');
+}
+function closeCrop() { document.getElementById('crop-modal').classList.remove('show'); }
+function confirmCrop() {
+  const canvas = document.getElementById('cropCanvas');
+  const out = document.createElement('canvas');
+  const m = 0.08, cw = canvas.width, ch = canvas.height;
+  out.width = cw*(1-m*2); out.height = ch*(1-m*2);
+  out.getContext('2d').drawImage(canvas, cw*m, ch*m, out.width, out.height, 0, 0, out.width, out.height);
+  const src = out.toDataURL('image/jpeg', 0.92);
+  const pr = document.getElementById('prev-'+cropDocKey); pr.src = src; pr.style.display = 'block';
+  closeCrop(); aiScanDoc(cropDocKey, src);
+}
+
+// ════════════════════════════════════════════════════════
+// DETAIL VIEW
+// ════════════════════════════════════════════════════════
+function openDetail(id) {
+  const m = members.find(x => x.id === id); if (!m) return;
+  document.getElementById('detail-title').textContent = m.name || 'Member';
+  document.getElementById('detail-page').dataset.id = id;
+  let b = '';
+  if (m.aadhaar) b += `<span class="badge bb">AADHAAR ✓</span>`;
+  if (m.pan) b += `<span class="badge bg">PAN ✓</span>`;
+  if (m.bankAcc) b += `<span class="badge bv">BANK ✓</span>`;
+  if (m.voter) b += `<span class="badge bo">VOTER ✓</span>`;
+  if (m.ration) b += `<span class="badge br">RATION ✓</span>`;
+  const av = m.photo ? `<img src="${m.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>` : `<span>${m.gender==='Female'?'👩':'👨'}</span>`;
+  const val = (v,fb='Not added') => `<div class="${v?'info-val':'info-val ev'}">${v?esc(v):fb}</div>`;
+  const dt = (k,ico) => {
+    const src = m['doc'+k.charAt(0).toUpperCase()+k.slice(1)];
+    return src ? `<img class="doc-thumb" src="${src}" onclick="openImgFull('${src}')"/>` : `<div class="doc-thumb-empty">${ico}</div>`;
+  };
+  const dob = m.dob ? new Date(m.dob).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}) : '';
+  document.getElementById('detail-body').innerHTML = `
+    <div class="d-avatar-row"><div class="d-avatar">${av}</div><div style="flex:1"><div class="d-name">${esc(m.name)}</div><div class="d-ward">📍 ${esc(m.ward||'No ward')} ${m.category?'· '+m.category:''}</div><div class="d-badges">${b||'<span style="font-size:11px;color:var(--muted)">No documents</span>'}</div></div></div>
+    <div class="sec-head">Personal</div>
+    <div class="info-grid">
+      <div class="info-item"><div class="info-lbl">DATE OF BIRTH</div>${val(dob,'–')}</div>
+      <div class="info-item"><div class="info-lbl">GENDER</div>${val(m.gender)}</div>
+      <div class="info-item"><div class="info-lbl">MOBILE</div>${val(m.mobile)}</div>
+      <div class="info-item"><div class="info-lbl">CATEGORY</div>${val(m.category,'General')}</div>
+      <div class="info-item full"><div class="info-lbl">ADDRESS</div>${val(m.address)}</div>
+      <div class="info-item full"><div class="info-lbl">FATHER / MOTHER / HUSBAND</div>${val(m.relative)}</div>
+    </div>
+    <div class="sec-head">Documents</div>
+    <div class="info-grid">
+      <div class="info-item"><div class="info-lbl">AADHAAR</div>${val(m.aadhaar?m.aadhaar.replace(/(\d{4})(?=\d)/g,'$1 '):'')}</div>
+      <div class="info-item"><div class="info-lbl">PAN</div>${val(m.pan)}</div>
+      <div class="info-item"><div class="info-lbl">VOTER ID</div>${val(m.voter)}</div>
+      <div class="info-item"><div class="info-lbl">RATION</div>${val(m.ration)}</div>
+    </div>
+    <div class="info-item full" style="margin-bottom:8px"><div class="info-lbl">DOCUMENT PHOTOS</div><div class="doc-thumb-row">${dt('aadhaar','🪪')}${dt('pan','🪪')}${dt('voter','🗳️')}${dt('bank','🏦')}</div></div>
+    <div class="sec-head">Bank</div>
+    <div class="info-grid">
+      <div class="info-item full"><div class="info-lbl">BANK</div>${val(m.bankName)}</div>
+      <div class="info-item full"><div class="info-lbl">ACCOUNT</div>${val(m.bankAcc)}</div>
+      <div class="info-item"><div class="info-lbl">IFSC</div>${val(m.ifsc)}</div>
+      <div class="info-item"><div class="info-lbl">TYPE</div>${val(m.bankAccType,'Savings')}</div>
+      <div class="info-item full"><div class="info-lbl">HOLDER</div>${val(m.bankAccName)}</div>
+    </div>
+    <div class="sec-head">Schemes</div>
+    <div class="info-grid">
+      <div class="info-item"><div class="info-lbl">PM KISAN</div>${val(m.pmkisan)}</div>
+      <div class="info-item"><div class="info-lbl">MGNREGA</div>${val(m.mgnrega)}</div>
+      <div class="info-item full"><div class="info-lbl">AYUSHMAN</div>${val(m.ayushman)}</div>
+    </div>
+    ${m.notes?`<div class="info-item full" style="margin-bottom:10px"><div class="info-lbl">NOTES</div><div class="info-val">${esc(m.notes)}</div></div>`:''}
+    <div style="height:20px"></div>`;
+  document.getElementById('detail-page').classList.add('show');
+}
+function closeDetail() { document.getElementById('detail-page').classList.remove('show'); }
+function editMember() {
+  const id = document.getElementById('detail-page').dataset.id;
+  const m = members.find(x => x.id === id); if (!m) return;
+  editingId = id; clearForm(); populateForm(m); closeDetail(); showPage('add');
+}
+
+// ════════════════════════════════════════════════════════
+// BULK MEMBER ACTIONS
+// ════════════════════════════════════════════════════════
+async function deleteSelected() {
+  if (!confirm(`Delete ${selectedIds.size} members?`)) return;
+  const ids = [...selectedIds];
+  for (const id of ids) await deleteMemberCloud(id);
+  selectedIds.clear(); updateBulkBar();
+  showToast(`Deleted ${ids.length} members`, 'red-t');
+}
+function exportSelected() { downloadCSVData(members.filter(m => selectedIds.has(m.id))); }
+function openWardAssign() { document.getElementById('ward-modal').classList.add('show'); }
+function closeWardModal() { document.getElementById('ward-modal').classList.remove('show'); }
+async function applyWard() {
+  const w = document.getElementById('ward-inp').value.trim(); if (!w) return;
+  for (const id of selectedIds) {
+    const m = members.find(x => x.id === id); if (m) { m.ward = w; await putMemberCloud(m); }
+  }
+  clearSelection(); closeWardModal(); showToast(`Ward assigned ✓`, 'green-t');
+}
+
+// ════════════════════════════════════════════════════════
+// EXPORT / REPORTS
+// ════════════════════════════════════════════════════════
+function exportCSV() { downloadCSVData(members); }
+function downloadCSVData(data) {
+  const cols = ['name','dob','gender','mobile','address','ward','category','relative','occupation','aadhaar','pan','voter','ration','bankName','bankAcc','ifsc','bankAccType','bankAccName','pmkisan','mgnrega','ayushman','notes'];
+  const rows = data.map(m => cols.map(c => `"${(m[c]||'').replace(/"/g,'""')}"`).join(','));
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+[cols.join(','),...rows].join('\n')], {type:'text/csv;charset=utf-8'}));
+  a.download = `panchayat_${Date.now()}.csv`; a.click();
+  showToast(`Exported ${data.length} members ✓`, 'green-t');
+}
+function exportJSON() {
+  const safe = members.map(m => { const c={...m}; ['photo','docAadhaar','docPan','docVoter','docBank'].forEach(k=>delete c[k]); return c; });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(safe,null,2)], {type:'application/json'}));
+  a.download = `panchayat_${Date.now()}.json`; a.click();
+}
+function updateReports() {
+  const tot = members.length || 1;
+  const docs = [{l:'Aadhaar',f:m=>m.aadhaar},{l:'PAN',f:m=>m.pan},{l:'Voter',f:m=>m.voter},{l:'Bank',f:m=>m.bankAcc},{l:'Ration',f:m=>m.ration}];
+  document.getElementById('doc-coverage-bars').innerHTML = docs.map(d => {
+    const n = members.filter(d.f).length, p = Math.round(n/tot*100);
+    return `<div class="bar-row"><div class="bar-lbl">${d.l}</div><div class="bar-track"><div class="bar-fill" style="width:${p}%"></div></div><div class="bar-num">${n}</div></div>`;
+  }).join('');
+  const wards = {}; members.forEach(m => { const w=m.ward||'Unknown'; wards[w]=(wards[w]||0)+1; });
+  const wArr = Object.entries(wards).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const wMax = wArr[0] ? wArr[0][1] : 1;
+  document.getElementById('ward-bars').innerHTML = wArr.length
+    ? wArr.map(([w,n]) => `<div class="bar-row"><div class="bar-lbl">${w}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/wMax*100)}%"></div></div><div class="bar-num">${n}</div></div>`).join('')
+    : '<p style="color:var(--muted);font-size:12px">No data</p>';
+  const g = {Male:0,Female:0,Other:0}; members.forEach(m => { if(g[m.gender]!==undefined) g[m.gender]++; });
+  const gMax = Math.max(...Object.values(g)) || 1;
+  document.getElementById('gender-bars').innerHTML = Object.entries(g).map(([k,n]) =>
+    `<div class="bar-row"><div class="bar-lbl">${k}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/gMax*100)}%"></div></div><div class="bar-num">${n}</div></div>`
+  ).join('');
+}
+
+// ════════════════════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════════════════════
+async function saveSettings() {
+  const v = document.getElementById('set-village').value;
+  const g = document.getElementById('set-gp').value;
+  document.getElementById('topbar-village').textContent = v && g ? v+' · '+g : v || g || 'Village Management';
+  if (currentUser && firestore) {
+    try { await firestore.collection('users').doc(currentUser.uid).set({village:v,gp:g},{merge:true}); } catch(e) {}
+  }
+}
+async function clearAllData() {
+  if (!confirm('Delete ALL members? Cannot be undone!')) return;
+  if (!confirm('Final confirmation?')) return;
+  if (currentUser && firestore) {
+    const snap = await firestore.collection('users').doc(currentUser.uid).collection('members').get();
+    const batch = firestore.batch();
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  }
+  showToast('All data cleared', 'red-t');
+}
+
+// ════════════════════════════════════════════════════════
+// PAGES & NAV
+// ════════════════════════════════════════════════════════
+const PIDS = ['members','bulk','add','reports','settings'];
+function showPage(name) {
+  PIDS.forEach((p,i) => {
+    const pg = document.getElementById('page-'+p); if(pg) pg.classList.remove('on');
+    document.querySelectorAll('.navtab')[i].classList.toggle('on', p === name);
+  });
+  const t = document.getElementById('page-'+name); if(t) t.classList.add('on');
+  document.getElementById('fab').style.display = ['members','bulk'].includes(name) ? 'flex' : 'none';
+  if (name === 'members') applyFilter();
+  if (name === 'reports') updateReports();
+  if (name === 'add' && !editingId) clearForm();
+}
+function startAdd() { editingId = null; clearForm(); showPage('add'); }
+function cancelForm() { editingId = null; showPage('members'); }
+
+// ════════════════════════════════════════════════════════
+// UI HELPERS
+// ════════════════════════════════════════════════════════
+function toggleUserMenu(force) {
+  const m = document.getElementById('user-menu');
+  const show = force !== undefined ? force : !m.classList.contains('show');
+  m.classList.toggle('show', show);
+  if (show) { setTimeout(() => document.addEventListener('click', () => toggleUserMenu(false), {once:true}), 10); }
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtAadhaar(inp) { let v=inp.value.replace(/\D/g,''); v=v.replace(/(\d{4})(?=\d)/g,'$1 '); inp.value=v.slice(0,14); }
+let toastT = null;
+function showToast(msg, cls='') {
+  const t = document.getElementById('toast'); t.textContent = msg;
+  t.className = 'toast' + (cls ? ' '+cls : ''); t.classList.add('up');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('up'), 3500);
+}
+function openImgFull(src) { document.getElementById('img-full-img').src=src; document.getElementById('img-full').classList.add('show'); }
+function closeImgFull() { document.getElementById('img-full').classList.remove('show'); }
+function showSetupGuide() { showToast('See SETUP.md file for Firebase configuration steps'); }
+
+// ════════════════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════════════════
+function boot() {
+  initVS();
+  initFirebase();
+
+  // Long press to enter bulk select
+  const vw = document.getElementById('vscroll-wrap');
+  vw.addEventListener('touchstart', e => {
+    const row = e.target.closest('.mrow'); if (!row) return;
+    lpTimer = setTimeout(() => toggleSel(row.dataset.id), 500);
+  }, {passive:true});
+  vw.addEventListener('touchend', () => clearTimeout(lpTimer), {passive:true});
+  vw.addEventListener('touchmove', () => clearTimeout(lpTimer), {passive:true});
+}
+boot();
+</script>
+</body>
+</html>
